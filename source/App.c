@@ -54,14 +54,14 @@ void App_Run (void)
 
 
 			gpioWrite(PORTNUM2PIN(PE,26), HIGH);
-			pitSetAndBegin( PIT_0, 2); //800n
+			pitSetAndBegin( PIT_0, 10); //800n
 			pitSetIRQFunc(PIT_0,  setFlag1H);
 
 			while(!high1) {}
 
 			high1 = false;
 			gpioWrite(PORTNUM2PIN(PE,26), LOW);
-			pitSetAndBegin( PIT_0, 2); //460n
+			pitSetAndBegin( PIT_0, 20); //460n
 
 			while(!high1) {}
 
