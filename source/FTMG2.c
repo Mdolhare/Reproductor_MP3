@@ -64,7 +64,7 @@ void FTM_Init (FTMn_t ftm_id){
 	SIM->SCGC3 |= SIM_SCGC3_FTM3_MASK;
 
 
-	gpioMode(PORTNUM2PIN(PE,26),OUTPUT);
+	//gpioMode(PORTNUM2PIN(PE,26),OUTPUT);
 
 	NVIC_EnableIRQ(ftmIRQs_base[ftm_id]);
 
@@ -83,7 +83,7 @@ void FTM_ConfigEPWM(FTMn_t ftm_id, uint16_t mod, FTMChannel_t chn){
 	FTM_StopClock(ftm);
 
 	//Config FTMCounter
-	FTM_SetPrescaler(ftm, FTM_PSC_x4);
+	FTM_SetPrescaler(ftm, FTM_PSC_x1);
 
 	ftm->PWMLOAD = FTM_PWMLOAD_LDOK_MASK | FTM_PWMLOAD_CHnSEL(chn);
 
@@ -96,11 +96,17 @@ void FTM_ConfigEPWM(FTMn_t ftm_id, uint16_t mod, FTMChannel_t chn){
 	FTM_SetPulseWidthModulationLogic(ftm, chn, FTM_lAssertedHigh);   // ELSA / B Config de PWM
 	FTM_SetCounter(ftm_id, chn, mod/2);	//Duty
 
+
 	//
 	//Config sync PWM
 	ftm->SYNC |= FTM_SYNC_CNTMAX_MASK;
 	ftm->SYNCONF |= FTM_SYNCONF_SWWRBUF_MASK | FTM_SYNCONF_SYNCMODE_MASK ;
 	ftm->COMBINE |= FTM_COMBINE_SYNCENn(chn);
+
+	//dma enable
+	ftm_base[ftm_id]->CONTROLS[chn].CnSC |= FTM_CnSC_DMA_MASK | FTM_CnSC_CHIE_MASK;
+
+
 	FTM_StartClock(ftm);	//Arranca modulo FTM0
 
 }
@@ -263,7 +269,7 @@ void FTM_ClearInterruptFlag (FTM_t ftm, FTMChannel_t channel)
 }
 
 uint32_t *	FTM_GetAdressCnV (FTMn_t ftm_id, FTMChannel_t channel){
-	return &ftm_base[ftm_id]->CONTROLS[channel].CnV;
+	return &(ftm_base[ftm_id]->CONTROLS[channel].CnV);
 }
 
 void FTM_setDMARequest(FTMn_t ftm_id, FTMChannel_t channel){
@@ -308,7 +314,7 @@ __ISR__ 	FTM1_IRQHandler					 (void){
 __ISR__ 	FTM2_IRQHandler					 (void){
 	if((FTM2->SC & FTM_SC_TOF_MASK) && (FTM3->SC & FTM_SC_TOIE_MASK)){
 		FTM2->SC &= ~FTM_SC_TOF_MASK;
-		gpioToggle(PORTNUM2PIN(PB,9));
+		//gpioToggle(PORTNUM2PIN(PB,9));
 		(*FTM_ovIRQs[FTM_2])();
 	}
 	for(int i = 0; i < CANT_CHANNELS_FTM2;i++){

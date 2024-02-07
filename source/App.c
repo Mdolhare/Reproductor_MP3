@@ -1,7 +1,7 @@
 /***************************************************************************//**
   @file     App.c
   @brief    Application functions
-  @author   Nicolás Magliola
+  @author   Grupo 2
  ******************************************************************************/
 
 /*******************************************************************************
@@ -11,10 +11,23 @@
 #include "board.h"
 #include "gpio.h"
 #include "pit.h"
+#include "PWM.h"
+#include "dma.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
+
+#define EVER (;;)
+
+/*******************************************************************************
+ * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
+ ******************************************************************************/
+
+static PWM_pinID_t pwmConfig;
+
+static uint16_t data[] = { 20 ,80,20,80,20,80,20,80};
+
 
 
 /*******************************************************************************
@@ -22,8 +35,7 @@
  ******************************************************************************/
 
 static void delayLoop(uint32_t veces);
-static bool high1;
-void setFlag1H();
+
 
 /*******************************************************************************
  *******************************************************************************
@@ -32,45 +44,32 @@ void setFlag1H();
  ******************************************************************************/
 
 /* Función que se llama 1 vez, al comienzo del programa */
-void App_Init (void)
-{
-	gpioMode (PORTNUM2PIN(PB,23), OUTPUT);
+void App_Init (void) {
 
-}
-void setFlag1H()
-{
-	high1 = true;
+
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
-void App_Run (void)
-{
-	gpioMode (PORTNUM2PIN(PE,26), OUTPUT);
-	pitInit();
-	while (1) {
-		high1 = false;
+void App_Run (void) {
 
-		for(int i = 0; i<24; i++) {
+	gpioMode(PIN_LED_GREEN, OUTPUT);
+
+	gpioWrite(PIN_LED_GREEN, HIGH);
 
 
-			gpioWrite(PORTNUM2PIN(PE,26), HIGH);
-			pitSetAndBegin( PIT_0, 10); //800n
-			pitSetIRQFunc(PIT_0,  setFlag1H);
+    PWM_init(PWM_PTC2, &pwmConfig);
 
-			while(!high1) {}
+    uint32_t* cnv_ptr;
 
-			high1 = false;
-			gpioWrite(PORTNUM2PIN(PE,26), LOW);
-			pitSetAndBegin( PIT_0, 20); //460n
+    //cnv_ptr = PWM_getAdressCnVDMA(PWM_PTC2);
 
-			while(!high1) {}
+    dma_cfg_t dma_cfg = {2, 0, dma16BIT, 2, (sizeof(data)/sizeof(data[0])), sizeof(data), 0, 0, 0};
 
-			high1= false;
+    DMA_init(0, dmaFTM0_1, false, data, PWM_getAdressCnVDMA(PWM_PTC2), dma_cfg);
 
-		}
-		gpioWrite(PORTNUM2PIN(PE,26), LOW);
+    hw_EnableInterrupts();
 
-	}
+    for EVER;
 
 }
 

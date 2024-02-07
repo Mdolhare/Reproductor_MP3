@@ -71,7 +71,7 @@
 
 #define FTM_CLOCK_HZ 50000000UL
 
-#define FTM_PWM_RES_NS 80
+#define FTM_PWM_RES_NS 20
 #define FTM_IC_RES_NS 640
 
 #define CANT_FTM 4

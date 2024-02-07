@@ -119,7 +119,7 @@ enum DMA_BIT_TRANSFER_AMOUNT {
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
 void DMA_init(uint32_t channel, uint32_t source,
-		bool timer, uint16_t* sourceBuffer, uint8_t* destinationBuffer,
+		bool timer, uint32_t* sourceBuffer, uint32_t* destinationBuffer,
 		dma_cfg_t config);
 
 void dma_set_jump(uint8_t channel, uint8_t sOffset);

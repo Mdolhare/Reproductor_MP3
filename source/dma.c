@@ -33,7 +33,7 @@ static dmaIrqFun_t funcs[DMA_CHANNEL_AMOUNT];
  ******************************************************************************/
 
 void DMA_init(uint32_t channel, uint32_t source,
-		bool timer, uint16_t* sourceBuffer, uint8_t* destinationBuffer,
+		bool timer, uint32_t* sourceBuffer, uint32_t* destinationBuffer,
 		dma_cfg_t config) {
 
 	SIM->SCGC7 |= SIM_SCGC7_DMA_MASK;
@@ -109,7 +109,7 @@ void dma_add_irq(uint8_t channel, dmaIrqFun_t callback) {
 
 __ISR__ DMA0_IRQHandler(void)
 {
-	gpioWrite(PIN_LED_GREEN, 1);
+	//gpioWrite(PIN_LED_GREEN, 1);
 	/* Clear the interrupt flag. */
 	DMA0->CINT |= 0;
 
@@ -118,13 +118,14 @@ __ISR__ DMA0_IRQHandler(void)
 
 	/* Change the source buffer contents. */
 	//MinorTransferDone = 1;
-	funcs[0]();
-	gpioWrite(PIN_LED_GREEN, 0);
+	//funcs[0]();
+	//gpioWrite(PIN_LED_GREEN, 0);
 }
 
 
 __ISR__ DMA1_IRQHandler(void)
 {
+	//gpioWrite(PIN_LED_GREEN, 1);
 	/* Clear the interrupt flag. */
 	DMA0->CINT |= 1;
 
@@ -133,7 +134,8 @@ __ISR__ DMA1_IRQHandler(void)
 
 	/* Change the source buffer contents. */
 	//MinorTransferDone = 1;
-	funcs[1]();
+	//funcs[1]();
+	//gpioWrite(PIN_LED_GREEN, 0);
 }
 
 
