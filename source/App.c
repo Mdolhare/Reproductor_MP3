@@ -11,9 +11,9 @@
 #include "board.h"
 #include "gpio.h"
 #include "pit.h"
-//#include "PWM.h"
+#include "PWM.h"
 #include "dma.h"
-#include "FTM.h"
+//#include "FTM.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -25,9 +25,9 @@
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
 
-//static PWM_pinID_t pwmConfig;
+static PWM_pinID_t pwmConfig;
 
-static uint16_t data[8] = { 40 ,10,40,10,40,10,40,10};
+static uint16_t data[8] = { 10 ,20,30,40,50,20,30,50};
 
 static uint32_t data2[16];
 
@@ -61,13 +61,13 @@ void App_Run (void) {
 
 	gpioWrite(PIN_LED_RED, HIGH);
 
-	FTM_Init();
+	//FTM_Init();
 
-    //PWM_init(PWM_PTC1, &pwmConfig);
+    PWM_init(PWM_PTC1, &pwmConfig);
 
-    uint16_t* cnv_ptr;
+    uint32_t* cnv_ptr;
 
-    //cnv_ptr = PWM_getAdressCnVDMA(PWM_PTC1);
+    cnv_ptr = PWM_getAdressCnVDMA(PWM_PTC1);
 
     dma_cfg_t dma_cfg = {2, 0, dma16BIT, dma16BIT, 2, (sizeof(data)/sizeof(data[0])), sizeof(data), 0, 0, 0};
 

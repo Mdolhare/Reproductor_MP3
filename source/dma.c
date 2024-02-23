@@ -52,7 +52,7 @@ void DMA_init(uint32_t channel, uint32_t source,
 	NVIC_EnableIRQ(channel);
 
 	DMA0->TCD[channel].SADDR = (uint32_t)(sourceBuffer);
-	DMA0->TCD[channel].DADDR = (uint32_t)(&(FTM0->CONTROLS[0].CnV));//(destinationBuffer);
+	DMA0->TCD[channel].DADDR = (uint32_t)(destinationBuffer);
 	//espia = &(DMA0->TCD[channel].SADDR);
 	//espia2 = &(DMA0->TCD[channel].DADDR);
 
@@ -73,7 +73,7 @@ void DMA_init(uint32_t channel, uint32_t source,
 	DMA0->TCD[channel].SLAST = -config.sShiftBack;
 	DMA0->TCD[channel].DLAST_SGA = -config.dShiftBack;
 
-	DMA0->TCD[channel].CSR = DMA_CSR_INTHALF_MASK | DMA_CSR_INTMAJOR_MASK;
+	DMA0->TCD[channel].CSR = DMA_CSR_INTMAJOR_MASK;
 
 
 	DMA0->ERQ |= DMA_ERQ_ERQ0_MASK << channel;
