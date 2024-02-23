@@ -11,8 +11,9 @@
 #include "board.h"
 #include "gpio.h"
 #include "pit.h"
-#include "PWM.h"
+//#include "PWM.h"
 #include "dma.h"
+#include "FTM.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -24,11 +25,11 @@
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
 
-static PWM_pinID_t pwmConfig;
+//static PWM_pinID_t pwmConfig;
 
-static uint16_t data[] = { 20 ,80,20,80,20,80,20,80};
+static uint16_t data[8] = { 40 ,10,40,10,40,10,40,10};
 
-
+static uint32_t data2[16];
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
@@ -52,24 +53,33 @@ void App_Init (void) {
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void) {
 
-	gpioMode(PIN_LED_GREEN, OUTPUT);
+	gpioMode(PTB9, OUTPUT);
 
-	gpioWrite(PIN_LED_GREEN, HIGH);
+	gpioWrite(PTB9, HIGH);
 
+	gpioMode(PIN_LED_RED, OUTPUT);
 
-    PWM_init(PWM_PTC2, &pwmConfig);
+	gpioWrite(PIN_LED_RED, HIGH);
 
-    uint32_t* cnv_ptr;
+	FTM_Init();
 
-    //cnv_ptr = PWM_getAdressCnVDMA(PWM_PTC2);
+    //PWM_init(PWM_PTC1, &pwmConfig);
 
-    dma_cfg_t dma_cfg = {2, 0, dma16BIT, 2, (sizeof(data)/sizeof(data[0])), sizeof(data), 0, 0, 0};
+    uint16_t* cnv_ptr;
 
-    DMA_init(0, dmaFTM0_1, false, data, PWM_getAdressCnVDMA(PWM_PTC2), dma_cfg);
+    //cnv_ptr = PWM_getAdressCnVDMA(PWM_PTC1);
 
-    hw_EnableInterrupts();
+    dma_cfg_t dma_cfg = {2, 0, dma16BIT, dma16BIT, 2, (sizeof(data)/sizeof(data[0])), sizeof(data), 0, 0, 0};
 
-    for EVER;
+    DMA_init(0, dmaFTM0_0, false, data, cnv_ptr, dma_cfg);
+
+    //hw_EnableInterrupts();
+    //(PWM_getAdressCnVDMA(PWM_PTC1))
+
+    for EVER {
+    	int a = 0;
+    	a++;
+    }
 
 }
 

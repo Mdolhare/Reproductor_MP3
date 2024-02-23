@@ -29,7 +29,8 @@ typedef void (*dmaIrqFun_t)(void);
 typedef struct {
 	uint16_t sOffset;
 	uint16_t dOffset;
-	uint16_t transferSize;
+	uint16_t sTransferSize;
+	uint16_t dTransferSize;
 	uint16_t byteAmount;
 	uint16_t minorLoopIter;
 	uint16_t sShiftBack;

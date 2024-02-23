@@ -28,6 +28,10 @@
 
 static dmaIrqFun_t funcs[DMA_CHANNEL_AMOUNT];
 
+static uint32_t* espia;
+static uint32_t* espia2;
+
+
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
@@ -48,12 +52,17 @@ void DMA_init(uint32_t channel, uint32_t source,
 	NVIC_EnableIRQ(channel);
 
 	DMA0->TCD[channel].SADDR = (uint32_t)(sourceBuffer);
-	DMA0->TCD[channel].DADDR = (uint32_t)(destinationBuffer);
+	DMA0->TCD[channel].DADDR = (uint32_t)(&(FTM0->CONTROLS[0].CnV));//(destinationBuffer);
+	//espia = &(DMA0->TCD[channel].SADDR);
+	//espia2 = &(DMA0->TCD[channel].DADDR);
+
 
 	DMA0->TCD[channel].SOFF = config.sOffset;
 	DMA0->TCD[channel].DOFF = config.dOffset;
+	//espia = &(DMA0->TCD[channel].SOFF);
+	//espia2 = &(DMA0->TCD[channel].DOFF);
 
-	DMA0->TCD[channel].ATTR = DMA_ATTR_SSIZE(config.transferSize) | DMA_ATTR_DSIZE(config.transferSize)
+	DMA0->TCD[channel].ATTR = DMA_ATTR_SSIZE(config.sTransferSize) | DMA_ATTR_DSIZE(config.dTransferSize)
 			| DMA_ATTR_DMOD(config.dCircBuff) | DMA_ATTR_SMOD(config.sCircBuff);
 
 	DMA0->TCD[channel].NBYTES_MLNO = config.byteAmount;
@@ -64,7 +73,7 @@ void DMA_init(uint32_t channel, uint32_t source,
 	DMA0->TCD[channel].SLAST = -config.sShiftBack;
 	DMA0->TCD[channel].DLAST_SGA = -config.dShiftBack;
 
-	DMA0->TCD[channel].CSR = DMA_CSR_INTMAJOR_MASK;
+	DMA0->TCD[channel].CSR = DMA_CSR_INTHALF_MASK | DMA_CSR_INTMAJOR_MASK;
 
 
 	DMA0->ERQ |= DMA_ERQ_ERQ0_MASK << channel;
@@ -109,7 +118,7 @@ void dma_add_irq(uint8_t channel, dmaIrqFun_t callback) {
 
 __ISR__ DMA0_IRQHandler(void)
 {
-	//gpioWrite(PIN_LED_GREEN, 1);
+	gpioWrite(PTB9, 1);
 	/* Clear the interrupt flag. */
 	DMA0->CINT |= 0;
 
@@ -119,13 +128,13 @@ __ISR__ DMA0_IRQHandler(void)
 	/* Change the source buffer contents. */
 	//MinorTransferDone = 1;
 	//funcs[0]();
-	//gpioWrite(PIN_LED_GREEN, 0);
+	gpioWrite(PTB9, 0);
 }
 
 
 __ISR__ DMA1_IRQHandler(void)
 {
-	//gpioWrite(PIN_LED_GREEN, 1);
+	gpioWrite(PTB9, 1);
 	/* Clear the interrupt flag. */
 	DMA0->CINT |= 1;
 
@@ -135,7 +144,7 @@ __ISR__ DMA1_IRQHandler(void)
 	/* Change the source buffer contents. */
 	//MinorTransferDone = 1;
 	//funcs[1]();
-	//gpioWrite(PIN_LED_GREEN, 0);
+	gpioWrite(PTB9, 0);
 }
 
 
@@ -151,3 +160,13 @@ __ISR__ DMA2_IRQHandler(void)
 	//MinorTransferDone = 1;
 	//funcs[1]();
 }
+
+void DMA_Error_IRQHandler()
+{
+	/* Clear the error interrupt flag.*/
+	DMA0->CERR |= 1;
+
+	/* Turn the red LED on. */
+	gpioWrite(PIN_LED_RED, 0);
+}
+
