@@ -27,7 +27,7 @@
 
 static PWM_pinID_t pwmConfig;
 
-static uint16_t data[8] = { 10 ,20,30,40,50,20,30,50};
+static uint16_t data[8] = {10,20,30,40,50,20,30,50};
 
 static uint32_t data2[16];
 
