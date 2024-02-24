@@ -40,7 +40,53 @@ typedef struct {
 } dma_cfg_t;
 
 
-enum DMA_CHANNELS {
+typedef struct {
+	uint32_t SADDR;
+	uint16_t SOFF;
+	uint16_t ATTR;
+	union {
+		uint32_t NBYTES_MLNO;
+		uint32_t NBYTES_MLOFFNO;
+		uint32_t NBYTES_MLOFFYES;
+	};
+	uint32_t SLAST;
+	uint32_t DADDR;
+	uint16_t DOFF;
+	union {
+		uint16_t CITER_ELINKNO;
+		uint16_t CITER_ELINKYES;
+	};
+	uint32_t DLASTSGA;
+	uint16_t CSR;
+	union {
+		uint16_t BITER_ELINKNO;
+		uint16_t BITER_ELINKYES;
+	};
+}TCD_t;
+
+
+typedef enum {
+	dmaCHANNEL0,
+	dmaCHANNEL1,
+	dmaCHANNEL2,
+	dmaCHANNEL3,
+	dmaCHANNEL4,
+	dmaCHANNEL5,
+	dmaCHANNEL6,
+	dmaCHANNEL7,
+	dmaCHANNEL8,
+	dmaCHANNEL9,
+	dmaCHANNEL10,
+	dmaCHANNEL11,
+	dmaCHANNEL12,
+	dmaCHANNEL13,
+	dmaCHANNEL14,
+	dmaCHANNEL015,
+} dma_channels_t;
+
+
+
+typedef enum {
 	dmaDISABLED,
 	dmaUART0_RX=2,
 	dmaUART0_TX,
@@ -100,7 +146,7 @@ enum DMA_CHANNELS {
 	dmaDMA_MUX_3,
 	dmaDMA_MUX_4,
 	dmaDMA_MUX_5,
-};
+} dma_sources_t;
 
 enum DMA_BIT_TRANSFER_AMOUNT {
 	dma8BIT,
@@ -122,6 +168,8 @@ enum DMA_BIT_TRANSFER_AMOUNT {
 void DMA_init(uint32_t channel, uint32_t source,
 		bool timer, uint32_t* sourceBuffer, uint32_t* destinationBuffer,
 		dma_cfg_t config);
+
+void DMA_init_tcd(dma_channels_t channel, dma_sources_t source, bool timer, TCD_t tcd);
 
 void dma_set_jump(uint8_t channel, uint8_t sOffset);
 

@@ -53,14 +53,9 @@ void DMA_init(uint32_t channel, uint32_t source,
 
 	DMA0->TCD[channel].SADDR = (uint32_t)(sourceBuffer);
 	DMA0->TCD[channel].DADDR = (uint32_t)(destinationBuffer);
-	//espia = &(DMA0->TCD[channel].SADDR);
-	//espia2 = &(DMA0->TCD[channel].DADDR);
-
 
 	DMA0->TCD[channel].SOFF = config.sOffset;
 	DMA0->TCD[channel].DOFF = config.dOffset;
-	//espia = &(DMA0->TCD[channel].SOFF);
-	//espia2 = &(DMA0->TCD[channel].DOFF);
 
 	DMA0->TCD[channel].ATTR = DMA_ATTR_SSIZE(config.sTransferSize) | DMA_ATTR_DSIZE(config.dTransferSize)
 			| DMA_ATTR_DMOD(config.dCircBuff) | DMA_ATTR_SMOD(config.sCircBuff);
@@ -74,6 +69,42 @@ void DMA_init(uint32_t channel, uint32_t source,
 	DMA0->TCD[channel].DLAST_SGA = -config.dShiftBack;
 
 	DMA0->TCD[channel].CSR = DMA_CSR_INTMAJOR_MASK;
+
+
+	DMA0->ERQ |= DMA_ERQ_ERQ0_MASK << channel;
+
+}
+void DMA_init_tcd(dma_channels_t channel, dma_sources_t source, bool timer, TCD_t tcd) {
+
+	SIM->SCGC7 |= SIM_SCGC7_DMA_MASK;
+	SIM->SCGC6 |= SIM_SCGC6_DMAMUX_MASK;
+
+	if(timer)
+		DMAMUX->CHCFG[channel] |= DMAMUX_CHCFG_ENBL_MASK | DMAMUX_CHCFG_TRIG_MASK | DMAMUX_CHCFG_SOURCE(source);
+	else
+		DMAMUX->CHCFG[channel] |= DMAMUX_CHCFG_ENBL_MASK | DMAMUX_CHCFG_SOURCE(source);
+
+	NVIC_ClearPendingIRQ(channel);
+	NVIC_EnableIRQ(channel);
+
+	DMA0->TCD[channel].SADDR = tcd.SADDR;
+	DMA0->TCD[channel].DADDR = tcd.DADDR;
+
+
+	DMA0->TCD[channel].SOFF = tcd.SOFF;
+	DMA0->TCD[channel].DOFF = tcd.DOFF;
+
+	DMA0->TCD[channel].ATTR = tcd.ATTR;
+
+	DMA0->TCD[channel].NBYTES_MLNO = tcd.NBYTES_MLNO;
+
+	DMA0->TCD[channel].CITER_ELINKNO = tcd.CITER_ELINKNO;
+	DMA0->TCD[channel].BITER_ELINKNO = tcd.BITER_ELINKNO;
+
+	DMA0->TCD[channel].SLAST = tcd.SLAST;
+	DMA0->TCD[channel].DLAST_SGA = tcd.DLASTSGA;
+
+	DMA0->TCD[channel].CSR = tcd.CSR;
 
 
 	DMA0->ERQ |= DMA_ERQ_ERQ0_MASK << channel;
