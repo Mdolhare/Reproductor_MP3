@@ -149,7 +149,6 @@ void dma_add_irq(uint8_t channel, dmaIrqFun_t callback) {
 
 __ISR__ DMA0_IRQHandler(void)
 {
-	gpioWrite(PTB9, 1);
 	/* Clear the interrupt flag. */
 	DMA0->CINT |= 0;
 
@@ -158,8 +157,7 @@ __ISR__ DMA0_IRQHandler(void)
 
 	/* Change the source buffer contents. */
 	//MinorTransferDone = 1;
-	//funcs[0]();
-	gpioWrite(PTB9, 0);
+	funcs[0]();
 }
 
 

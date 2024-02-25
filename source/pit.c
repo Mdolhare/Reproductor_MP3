@@ -45,6 +45,12 @@ void pitSetAndBegin(uint32_t channel, uint32_t time) {
 	PIT->CHANNEL[channel].LDVAL = val;
 }
 
+void pitSetAndBegin20NS(uint32_t channel, uint32_t time) {
+	PIT->CHANNEL[channel].TCTRL |= PIT_TCTRL_TEN_MASK;
+	uint32_t val = time;
+	PIT->CHANNEL[channel].LDVAL = val;
+}
+
 void pitSetIRQFunc(uint32_t channel, pitIrqFun_t pitFunc) {
 	pitIQRs[channel] = pitFunc;
 	PIT->CHANNEL[channel].TCTRL |= PIT_TCTRL_TIE_MASK;
@@ -54,7 +60,11 @@ void pitDisableIRQFunc(uint32_t channel) {
 	PIT->CHANNEL[channel].TCTRL &= ~PIT_TCTRL_TIE_MASK;
 }
 
+void pitDisable(uint32_t channel)
+{
+	PIT->CHANNEL[channel].TCTRL &= ~PIT_TCTRL_TEN_MASK;
 
+}
 
 
 static void pitIRQHandler(uint32_t pit) {

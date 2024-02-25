@@ -21,10 +21,11 @@ enum pits {PIT_0, PIT_1, PIT_2, PIT_3};
 void pitInit(void);
 
 void pitSetAndBegin(uint32_t channel, uint32_t time);
-void pitSetAndBegin2(uint32_t channel, uint32_t time);
+void pitSetAndBegin20NS(uint32_t channel, uint32_t time);
 void pitSetIRQFunc(uint32_t channel, pitIrqFun_t pitFunc);
 
 void pitDisableIRQFunc(uint32_t channel);
+void pitDisable(uint32_t channel);
 
 
 #endif /* PIT_H */
