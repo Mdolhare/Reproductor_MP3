@@ -13,7 +13,7 @@
 #include "pit.h"
 #include "PWM.h"
 #include "dma.h"
-#include "FTMG2.h"
+//#include "FTM.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -27,16 +27,15 @@
 
 static PWM_pinID_t pwmConfig;
 
-static uint16_t data[72] = {20,40,20,40,20,40,20,40,20,40,20,40,20,40,20,40,20,40,20,40,20,40,20,40,
-		20,40,20,40,20,40,20,40,20,40,20,40,20,40,20,40,20,40,20,40,20,40,20,40,
-		20,40,20,40,20,40,20,40,20,40,20,40,20,40,20,40,20,40,20,40,20,40,20,40};
+static uint16_t data[8] = {10,20,30,40,50,20,30,50};
 
-static uint16_t data2[8] = {1,1,1,1,1,1,1,1};
+static uint16_t data2[8] = {100,100,100,200,300,100,100,100};
 
-static uint16_t data3[24];
+static uint32_t data3[18];
 
-static TCD_t tcd;
+static TCD_t tcd[2] __attribute__((aligned (32)));
 
+static tcd_cfg_t configs[2];
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
@@ -44,7 +43,7 @@ static TCD_t tcd;
 
 static void delayLoop(uint32_t veces);
 
-static void reset_start();
+static void callback(void);
 
 /*******************************************************************************
  *******************************************************************************
@@ -53,34 +52,54 @@ static void reset_start();
  ******************************************************************************/
 
 /* Función que se llama 1 vez, al comienzo del programa */
-void App_Init (void) {
-
+void App_Init2 (void) {
 
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
-void App_Run (void) {
+void App_Run2 (void) {
 
-	gpioMode(PORTNUM2PIN(PB,19), OUTPUT);
+	gpioMode (PTB9, OUTPUT);
+	gpioWrite (PTB9, 0);
 
-	PWM_init(PWM_PTC1, &pwmConfig);
 	pitInit();
-	uint32_t* cnv_ptr;
-	cnv_ptr = PWM_getAdressCnVDMA(PWM_PTC1);
 
-	tcd_cfg_t dma_cfg = {(uint32_t)data, (uint32_t)cnv_ptr, 2, 0,
-			dma16BIT, dma16BIT, 2, (sizeof(data)/sizeof(data[0])), sizeof(data), 0, 0, 0};
+	configs[0].source=(uint32_t)data;
+	configs[0].destination=(uint32_t)data3;
+	configs[0].sOffset=2;
+	configs[0].dOffset=4;
+	configs[0].sTransferSize=dma16BIT;
+	configs[0].dTransferSize=dma16BIT;
+	configs[0].byteAmount=2;
+	configs[0].minorLoopIter=sizeof(data)/sizeof(data[0]);
+	configs[0].sShiftBack=sizeof(data);
+	configs[0].dShiftBack=sizeof(data)*2;
+	configs[0].sCircBuff=0;
+	configs[0].dCircBuff=0;
 
+	configs[1].source=(uint32_t)data2;
+	configs[1].destination=(uint32_t)(&data3[8]);
+	configs[1].sOffset=2;
+	configs[1].dOffset=4;
+	configs[1].sTransferSize=dma16BIT;
+	configs[1].dTransferSize=dma16BIT;
+	configs[1].byteAmount=2;
+	configs[1].minorLoopIter=sizeof(data2)/sizeof(data2[0]);
+	configs[1].sShiftBack=0;
+	//configs[1].dShiftBack=(uint32_t)&tcd[0];
+	configs[1].sCircBuff=0;
+	configs[1].dCircBuff=0;
 
-	dma_config(dma_cfg, &tcd);
+	//dma_config_scatter_gather(configs, tcd, 2);	//MODO SCATTER AND GATHER
 
-	dma_begin(dmaCHANNEL0,  dmaFTM0_0, false, &tcd);
+	dma_config(configs[0], &(tcd[0]));	//USO NORMAL
 
-	dma_add_irq(dmaCHANNEL0, reset_start, &tcd, false, true);
+	dma_add_irq(dmaCHANNEL0, callback, &(tcd[0]), false, true);
 
-	pitSetIRQFunc(PIT_0, reset_start);
+	dma_begin(dmaCHANNEL0, dmaDMA_MUX_5, true, &(tcd[0]));
 
-	//FTM_StopClock(FTM0);
+	pitSetAndBegin(PIT_0, 100);
+
 
     for EVER;
 
@@ -94,36 +113,16 @@ void App_Run (void) {
  *******************************************************************************
  ******************************************************************************/
 
+static void callback(void) {
+	gpioToggle(PTB9);
+}
+
+
 static void delayLoop(uint32_t veces)
 {
     while (veces--);
 }
 
-
-static void reset_start()
-{
-	gpioToggle(PORTNUM2PIN(PB,19));
-	static bool start = true;
-	static int counter = 0;
-	if(start)
-	{
-			counter = 0;
-			start = false;
-			FTM_StopClock(FTM0);
-			pitSetAndBegin(PIT_0, 50);
-
-
-
-	}
-	else
-	{
-		start = true;
-		FTM_StartClock(FTM0);
-		pitDisable(PIT_0);
-
-
-	}
-}
 
 /*******************************************************************************
  ******************************************************************************/

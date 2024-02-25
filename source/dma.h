@@ -27,6 +27,8 @@ typedef void (*dmaIrqFun_t)(void);
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
 typedef struct {
+	uint32_t source;
+	uint32_t destination;
 	uint16_t sOffset;
 	uint16_t dOffset;
 	uint16_t sTransferSize;
@@ -34,10 +36,10 @@ typedef struct {
 	uint16_t byteAmount;
 	uint16_t minorLoopIter;
 	uint16_t sShiftBack;
-	uint16_t dShiftBack;
+	uint32_t dShiftBack;
 	uint16_t sCircBuff;
 	uint16_t dCircBuff;
-} dma_cfg_t;
+} tcd_cfg_t;
 
 
 typedef struct {
@@ -81,7 +83,7 @@ typedef enum {
 	dmaCHANNEL12,
 	dmaCHANNEL13,
 	dmaCHANNEL14,
-	dmaCHANNEL015,
+	dmaCHANNEL15,
 } dma_channels_t;
 
 
@@ -165,15 +167,15 @@ enum DMA_BIT_TRANSFER_AMOUNT {
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
-void DMA_init(uint32_t channel, uint32_t source,
-		bool timer, uint32_t* sourceBuffer, uint32_t* destinationBuffer,
-		dma_cfg_t config);
+void dma_config(tcd_cfg_t config, TCD_t* tcd);
 
-void DMA_init_tcd(dma_channels_t channel, dma_sources_t source, bool timer, TCD_t tcd);
+void dma_config_scatter_gather(tcd_cfg_t* config, TCD_t* tcd, uint8_t amount);
 
-void dma_set_jump(uint8_t channel, uint8_t sOffset);
+void dma_begin(dma_channels_t channel, dma_sources_t source, bool timer, TCD_t* tcd);
 
-void dma_add_irq(uint8_t channel, dmaIrqFun_t callback);
+void dma_set_jump(dma_channels_t channel, uint8_t sOffset);
+
+void dma_add_irq(dma_channels_t channel, dmaIrqFun_t callback, TCD_t* tcd, bool halfMajor, bool fullMajor);
 
 /*******************************************************************************
  ******************************************************************************/
