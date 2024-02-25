@@ -94,34 +94,25 @@ void App_Run (void) {
  *******************************************************************************
  ******************************************************************************/
 
-static void delayLoop(uint32_t veces)
-{
+static void delayLoop(uint32_t veces) {
     while (veces--);
 }
 
 
-static void reset_start()
-{
+static void reset_start() {
 	gpioToggle(PORTNUM2PIN(PB,19));
 	static bool start = true;
 	static int counter = 0;
-	if(start)
-	{
-			counter = 0;
-			start = false;
-			FTM_StopClock(FTM0);
-			pitSetAndBegin(PIT_0, 50);
-
-
-
+	if(start) {
+		FTM_StopClock(FTM0);
+		counter = 0;
+		start = false;
+		pitSetAndBegin(PIT_0, 50);
 	}
-	else
-	{
-		start = true;
+	else {
 		FTM_StartClock(FTM0);
+		start = true;
 		pitDisable(PIT_0);
-
-
 	}
 }
 
