@@ -23,7 +23,6 @@ typedef struct LED{
 	uint16_t green[COLOR_BITS];
 	uint16_t red[COLOR_BITS];
 	uint16_t blue[COLOR_BITS];
-
 }LED;
 /*******************************************************************************
  * VARIABLES WITH GLOBAL SCOPE
@@ -57,19 +56,12 @@ void matrixInit(PWM_pin_t pin)
 	PWM_init(pin, &pwmConfig);  //choose PWM_PTC1
 	uint32_t* cnv_ptr;
 	cnv_ptr = PWM_getAdressCnVDMA(pin);
-
 	tcd_cfg_t dma_cfg = {(uint32_t)mat, (uint32_t)cnv_ptr, 2, 0,
 					dma16BIT, dma16BIT, 2, (sizeof(mat)/sizeof(mat[0].green[0])), sizeof(mat), 0, 0, 0};
-
-
 	dma_config(dma_cfg, &tcd);
-
 	dma_begin(dmaCHANNEL0,  dmaFTM0_0, false, &tcd);
-
 	dma_add_irq(dmaCHANNEL0, reset_start, &tcd, false, true);
-
 	pitSetIRQFunc(PIT_0, reset_stop);
-
 }
 
 void turnOffMatrix()
