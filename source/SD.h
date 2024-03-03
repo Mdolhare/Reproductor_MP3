@@ -29,5 +29,6 @@ void SD_init();
 
 bool SD_initializationProcess();
 
+bool SD_isSDcard();
 
 #endif /* SD_H_ */

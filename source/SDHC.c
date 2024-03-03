@@ -8,6 +8,7 @@
  ******************************************************************************/
 #include "SDHC.h"
 #include "port.h"
+#include "gpio.h"
 #include "MK64F12.h"
 #include <stdbool.h>
 /*******************************************************************************
@@ -24,7 +25,7 @@
 
 #define SDHC_CMD_ERR 		(SDHC_IRQSTAT_CTOE_MASK | SDHC_IRQSTAT_CCE_MASK)
 #define SDHC_CMD_DAT_ERR	(SDHC_IRQSTAT_DTOE_MASK | SDHC_IRQSTAT_DEBE_MASK | SDHC_IRQSTAT_AC12E_MASK)
-
+#define SDHC_CMD_EN 		(SDHC_PRSSTAT_CIHB_MASK | SDHC_PRSSTAT_CDIHB_MASK)
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -79,6 +80,9 @@ void SDHC_init(){
 	*PCR_ADRESS(CLK) = PORT_PCR_MUX(PORT_mAlt4);
 	*PCR_ADRESS(SW_DETECT) = PORT_PCR_MUX(PORT_mGPIO) | PORT_PCR_PE_MASK ;
 
+	gpioMode(SW_DETECT, INPUT_PULLDOWN);
+
+
 	SIM->SCGC3 |= SIM_SCGC3_SDHC_MASK;
 	SIM->SOPT2 &= ~SIM_SOPT2_SDHCSRC_MASK;
 
@@ -86,12 +90,28 @@ void SDHC_init(){
 
 }
 
+void SDHC_boot(sdhc_busWidth width, uint16_t blockSize){
+	SDHC->SYSCTL |= SDHC_SYSCTL_RSTA_MASK;
+
+	SDHC->SYSCTL |= SDHC_SYSCTL_INITA_MASK;
+
+	SDHC->BLKATTR |= SDHC_BLKATTR_BLKSIZE(blockSize);
+
+	SDHC->PROCTL |= SDHC_PROCTL_DTW(width);
+
+
+}
+
+
 void SDHC_enableCardDedection(){
 	//Habilita lectura de evento
 	SDHC->IRQSTATEN |= SDHC_IRQSTATEN_CINSEN_MASK | SDHC_IRQSTATEN_CRMSEN_MASK;
 
 	//Dispara interrupcion
 	SDHC->IRQSIGEN |= SDHC_IRQSIGEN_CINSIEN_MASK | SDHC_IRQSIGEN_CRMIEN_MASK;
+}
+bool SDHC_isCardDetected(){
+	return gpioRead(SW_DETECT);
 }
 
 void SDHC_setClockFrecuency(sdhc_prescaler presc, uint8_t div){
@@ -147,6 +167,15 @@ bool SDHC_sendCMD(SDHC_cmd_t * cmd){
 		SDHC->BLKATTR |= SDHC_BLKATTR_BLKCNT(cmd->block_count);
 	}
 
+	if(!(SDHC->PRSSTAT & SDHC_CMD_EN)){
+		SDHC->CMDARG = cmd->cmd_arg;
+		SDHC->XFERTYP = xfertypReg;
+	}
+	else{
+		return false;
+	}
+
+
 	//wait response of command
 	while(! (SDHC->IRQSTAT & SDHC_IRQSTAT_CC_MASK) );
 	SDHC->IRQSTAT |= SDHC_IRQSTAT_CC_MASK;
@@ -161,6 +190,10 @@ bool SDHC_sendCMD(SDHC_cmd_t * cmd){
 	return err;
 }
 
+bool SDHC_getCMDstatus(){
+	return SDHC->PRSSTAT & SDHC_CMD_EN;
+}
+
 
 /*******************************************************************************
  *******************************************************************************
@@ -168,21 +201,21 @@ bool SDHC_sendCMD(SDHC_cmd_t * cmd){
  *******************************************************************************
  ******************************************************************************/
 static bool SDHC_checkErrInCMD(bool useDatLine){
-	if( SDHC->PRSSTAT & (SDHC_CMD_ERR | (useDatLine ? SDHC_CMD_DAT_ERR:0) ) ){
-		if(SDHC->PRSSTAT & SDHC_IRQSTAT_CTOE_MASK){
+	if( SDHC->IRQSTAT & (SDHC_CMD_ERR | (useDatLine ? SDHC_CMD_DAT_ERR:0) ) ){
+		if(SDHC->IRQSTAT & SDHC_IRQSTAT_CTOE_MASK){
 			status.err |= ERR_CMD_TIME_OUT;
 		}
-		if(SDHC->PRSSTAT & SDHC_IRQSTAT_CCE_MASK){
+		if(SDHC->IRQSTAT & SDHC_IRQSTAT_CCE_MASK){
 			status.err |= ERR_CMD_CRC;
 		}
 		if(useDatLine){
-			if(SDHC->PRSSTAT & SDHC_IRQSTAT_DTOE_MASK){
+			if(SDHC->IRQSTAT & SDHC_IRQSTAT_DTOE_MASK){
 				status.err |= ERR_CMD_DAT_TIME_OUT;
 			}
-			if(SDHC->PRSSTAT & SDHC_IRQSTAT_DEBE_MASK){
+			if(SDHC->IRQSTAT & SDHC_IRQSTAT_DEBE_MASK){
 				status.err |= ERR_CMD_DAT_END_BIT;
 			}
-			if(SDHC->PRSSTAT & SDHC_IRQSTAT_AC12E_MASK){
+			if(SDHC->IRQSTAT & SDHC_IRQSTAT_AC12E_MASK){
 				status.err |= ERR_CMD_DAT_AC12;
 			}
 		}
@@ -194,10 +227,10 @@ static bool SDHC_checkErrInCMD(bool useDatLine){
 
 
 static void SDHC_irqHandler(){
-
+/*
 	if(SDHC->IRQSTAT & SDHC_IRQSTAT_CRM_MASK){
 		SDHC->IRQSTAT |= SDHC_IRQSTAT_CRM_MASK;
-		SDHC->IRQSIGEN &= SDHC_IRQSIGEN_CRMIEN_MASK;
+		SDHC->IRQSTATEN &= SDHC_IRQSTATEN_CRMSEN_MASK;
 		SDHC->IRQSIGEN |= SDHC_IRQSIGEN_CINSIEN_MASK;
 		status.isCard = false;
 	}
@@ -208,7 +241,7 @@ static void SDHC_irqHandler(){
 		status.isCard = true;
 	}
 
-
+*/
 
 }
 

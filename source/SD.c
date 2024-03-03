@@ -142,14 +142,18 @@ static bool isOneSecondPassed;
  ******************************************************************************/
 void SD_init(){
 	SDHC_init();
-
+	//SDHC_enableCardDedection();
 	pitInit();
 
 
 }
+bool SD_isSDcard(){
+	return SDHC_isCardDetected();
+}
 
 bool SD_initializationProcess(){
 	bool success = SD_resetToIDLE();
+
 	if(success){
 		success = SD_operationConditionValidation();
 		if(success){
@@ -174,14 +178,16 @@ bool SD_initializationProcess(){
  *******************************************************************************
  ******************************************************************************/
 static bool SD_resetToIDLE(){
+	SDHC_boot(BUS_4bit,32);
+	while(SDHC_getCMDstatus());
+
 	SDHC_cmd_t cmd;
 	bool no_err;
-
-	//send APP_CMD (CMD55) to check MMC or SDcard, and then send an application specific (command ACMD41)
 	cmd.cmd_index = 0;
 	cmd.cmd_type = NORMAL_CMD;
 	cmd.cmd_resp_type = NO_R;
 	cmd.cmd_transfer_type = NO_DATA_T;
+
 	no_err = SDHC_sendCMD(&cmd);
 	return no_err;
 }

@@ -22,6 +22,13 @@
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
 typedef enum{
+	BUS_1bit 	= 0b00,
+	BUS_4bit 	= 0b01,
+	BUS_8bit 	= 0b10,
+	RES 		= 0b11,
+}sdhc_busWidth;
+
+typedef enum{
 	PRESCALEx1,
 	PRESCALEx2 = 0x01,
 	PRESCALEx4 = 0x02,
@@ -88,7 +95,11 @@ typedef struct{
  ******************************************************************************/
 void SDHC_init();
 
+void SDHC_boot(sdhc_busWidth width, uint16_t blockSize);
+
 void SDHC_enableCardDedection();
+
+bool SDHC_isCardDetected();
 
 void SDHC_setClockFrecuency(sdhc_prescaler presc, uint8_t div);
 
@@ -96,7 +107,7 @@ bool SDHC_sendCMD(SDHC_cmd_t * cmd);
 
 SDHC_errType SDHC_getErrStatus();
 
-
+bool SDHC_getCMDstatus();
 
 
 #endif /* SDHC_H_ */
