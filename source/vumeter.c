@@ -27,7 +27,7 @@
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
 
-typedef enum {
+/*typedef enum {
 	HEIGHT1 = UINT16_MAX/8,
 	HEIGHT2 = 2*UINT16_MAX/8,
 	HEIGHT3 = 3*UINT16_MAX/8,
@@ -36,7 +36,19 @@ typedef enum {
 	HEIGHT6 = 6*UINT16_MAX/8,
 	HEIGHT7 = 7*UINT16_MAX/8,
 	HEIGHT8 = 8*UINT16_MAX/8,
+} heights_t;*/
+
+typedef enum {
+	HEIGHT1 = 0,
+	HEIGHT2 = 500,
+	HEIGHT3 = 1000,
+	HEIGHT4 = 1500,
+	HEIGHT5 = 2000,
+	HEIGHT6 = 2500,
+	HEIGHT7 = 3000,
+	HEIGHT8 = 3500,
 } heights_t;
+
 
 /*******************************************************************************
  * VARIABLES WITH GLOBAL SCOPE
@@ -149,40 +161,40 @@ static void sendBins(uint16_t* bins) {
 		else
 			updateLED(col, 0, 0, 0);
 
-		if (bins[col + 2*COLUMNS] > HEIGHT2)
+		if (bins[col ] > HEIGHT2)
+			updateLED(col + COLUMNS, 0b00110000, 0b00110000, 0);
+		else
+			updateLED(col + COLUMNS, 0, 0, 0);
+
+		if (bins[col] > HEIGHT3)
 			updateLED(col + 2*COLUMNS, 0b00110000, 0b00110000, 0);
 		else
 			updateLED(col + 2*COLUMNS, 0, 0, 0);
 
-		if (bins[col + 3*COLUMNS] > HEIGHT3)
+		if (bins[col ] > HEIGHT4)
 			updateLED(col + 3*COLUMNS, 0b00110000, 0b00110000, 0);
 		else
 			updateLED(col + 3*COLUMNS, 0, 0, 0);
 
-		if (bins[col + 4*COLUMNS] > HEIGHT4)
+		if (bins[col ] > HEIGHT5)
 			updateLED(col + 4*COLUMNS, 0b00110000, 0b00110000, 0);
 		else
 			updateLED(col + 4*COLUMNS, 0, 0, 0);
 
-		if (bins[col + 5*COLUMNS] > HEIGHT5)
+		if (bins[col ] > HEIGHT6)
 			updateLED(col + 5*COLUMNS, 0b00110000, 0b00110000, 0);
 		else
 			updateLED(col + 5*COLUMNS, 0, 0, 0);
 
-		if (bins[col + 6*COLUMNS] > HEIGHT6)
+		if (bins[col] > HEIGHT7)
 			updateLED(col + 6*COLUMNS, 0b00110000, 0b00110000, 0);
 		else
 			updateLED(col + 6*COLUMNS, 0, 0, 0);
 
-		if (bins[col + 7*COLUMNS] > HEIGHT7)
+		if (bins[col ] > HEIGHT8)
 			updateLED(col + 7*COLUMNS, 0b00110000, 0b00110000, 0);
 		else
 			updateLED(col + 7*COLUMNS, 0, 0, 0);
-
-		if (bins[col + 8*COLUMNS] > HEIGHT8)
-			updateLED(col + 8*COLUMNS, 0b00110000, 0b00110000, 0);
-		else
-			updateLED(col + 8*COLUMNS, 0, 0, 0);
 
 	}
 

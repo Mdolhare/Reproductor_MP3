@@ -59,6 +59,9 @@ static LED mat[PIXEL_AMOUNT];
  ******************************************************************************/
 void matrixInit()
 {
+
+	turnOffMatrix();
+
 	pitInit();
 	PWM_init(PWM_PTC1, &pwmConfig);  //choose PWM_PTC1
 	uint32_t* cnv_ptr;
