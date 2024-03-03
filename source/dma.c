@@ -7,7 +7,7 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 
-#include "../SDK/CMSIS/MK64F12.h"
+#include "MK64F12.h"
 #include "dma.h"
 #include "hardware.h"
 #include "board.h"

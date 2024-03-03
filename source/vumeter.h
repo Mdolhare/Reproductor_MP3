@@ -36,7 +36,7 @@
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
 
-void vumeterInit(int16_t sampleSize, int32_t fs, float32_t lowBand,  float32_t highBand);
+void vumeterInit(uint16_t sampleSize, uint32_t fs, float32_t lowBand,  float32_t highBand);
 
 void vumeterTransform(int16_t* data);
 
