@@ -110,12 +110,17 @@ void SDHC_enableCardDedection(){
 	//Dispara interrupcion
 	SDHC->IRQSIGEN |= SDHC_IRQSIGEN_CINSIEN_MASK | SDHC_IRQSIGEN_CRMIEN_MASK;
 }
+
 bool SDHC_isCardDetected(){
 	return gpioRead(SW_DETECT);
 }
 
 void SDHC_setClockFrecuency(sdhc_prescaler presc, uint8_t div){
-		SDHC->SYSCTL |= SDHC_SYSCTL_SDCLKFS(presc) | SDHC_SYSCTL_DVS(div);
+
+	SDHC->SYSCTL &= SDHC_SYSCTL_SDCLKEN_MASK;
+	SDHC->SYSCTL |= SDHC_SYSCTL_SDCLKFS(presc) | SDHC_SYSCTL_DVS(div);
+	while(!(SDHC->PRSSTAT & SDHC_PRSSTAT_SDSTB_MASK));
+	SDHC->SYSCTL |= SDHC_SYSCTL_SDCLKEN_MASK;
 }
 
 SDHC_errType SDHC_getErrStatus(){
@@ -144,6 +149,7 @@ bool SDHC_sendCMD(SDHC_cmd_t * cmd){
 		case R1:
 		case R5:
 		case R6:
+		case R7:
 			xfertypReg |= SDHC_XFERTYP_RSPTYP(RESPONSE_48bits) | SDHC_XFERTYP_CICEN_MASK
 							| SDHC_XFERTYP_CCCEN_MASK;
 			cmd->cmd_lenght_resp = CMD_LENGTH_48;

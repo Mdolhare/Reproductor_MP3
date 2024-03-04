@@ -1,8 +1,8 @@
 
 #include "pit.h"
+#include "gpio.h"
 #include "MK64F12.h"
 #include "hardware.h"
-#include "gpio.h"
 
 static pitIrqFun_t pitIQRs[CANT_PITS];
 
@@ -39,16 +39,14 @@ void pitInit(void) {
 
 }
 
+//time in us
 void pitSetAndBegin(uint32_t channel, uint32_t time) {
-	PIT->CHANNEL[channel].TCTRL |= PIT_TCTRL_TEN_MASK;
-	uint32_t val = time*50-1;
+	uint32_t val = time * 50 - 1;
 	PIT->CHANNEL[channel].LDVAL = val;
+	PIT->CHANNEL[channel].TCTRL |= PIT_TCTRL_TEN_MASK;
 }
-
-void pitSetAndBegin20NS(uint32_t channel, uint32_t time) {
-	PIT->CHANNEL[channel].TCTRL |= PIT_TCTRL_TEN_MASK;
-	uint32_t val = time;
-	PIT->CHANNEL[channel].LDVAL = val;
+void pitStopTimer(uint32_t channel){
+	PIT->CHANNEL[channel].TCTRL &= ~PIT_TCTRL_TEN_MASK;
 }
 
 void pitSetIRQFunc(uint32_t channel, pitIrqFun_t pitFunc) {
@@ -60,11 +58,7 @@ void pitDisableIRQFunc(uint32_t channel) {
 	PIT->CHANNEL[channel].TCTRL &= ~PIT_TCTRL_TIE_MASK;
 }
 
-void pitDisable(uint32_t channel)
-{
-	PIT->CHANNEL[channel].TCTRL &= ~PIT_TCTRL_TEN_MASK;
 
-}
 
 
 static void pitIRQHandler(uint32_t pit) {
@@ -72,18 +66,11 @@ static void pitIRQHandler(uint32_t pit) {
 }
 
 
-void pitSetAndBegin2(uint32_t channel, uint32_t time) {
-	PIT->CHANNEL[channel].TCTRL |= PIT_TCTRL_TEN_MASK;
-	uint32_t val = time;
-	PIT->CHANNEL[channel].LDVAL = val;
-}
-
 
 __ISR__ PIT0_IRQHandler(void) {
-	//gpioWrite(PORTNUM2PIN(PB,23), HIGH);
 	pitIRQHandler(PIT_0);
 	PIT->CHANNEL[0].TFLG = 1;
-	//gpioWrite(PORTNUM2PIN(PB,23), LOW);
+
 }
 
 __ISR__ PIT1_IRQHandler(void) {
@@ -94,6 +81,7 @@ __ISR__ PIT1_IRQHandler(void) {
 __ISR__ PIT2_IRQHandler(void) {
 	pitIRQHandler(PIT_2);
 	PIT->CHANNEL[2].TFLG = 1;
+
 }
 
 __ISR__ PIT3_IRQHandler(void) {
