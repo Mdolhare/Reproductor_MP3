@@ -1,37 +1,29 @@
 /***************************************************************************//**
-  @file     cola.c
-  @brief
-  @author   Grupo 2
+  @file     matrix.h
+  @brief    Driver to use WS2812
+  @author   Grupo 2 2023
  ******************************************************************************/
 
-#ifndef _COLA_H_
-#define _COLA_H_
+#ifndef _MATRIX_H_
+#define _MATRIX_H_
 
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
 
 #include <stdint.h>
-#include <stdbool.h>
-
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
-#define Q_SIZE 1000
+#define PIXEL_AMOUNT 64
+#define ROWS 8
+#define COLUMNS 8
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
-
-typedef struct {
-	unsigned char buffer[Q_SIZE];
-	unsigned char* outPtr;
-	unsigned char* inPtr;
-	uint32_t count;
-	bool overflow;
-} cola_t;
 
 /*******************************************************************************
  * VARIABLE PROTOTYPES WITH GLOBAL SCOPE
@@ -40,14 +32,8 @@ typedef struct {
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
+void matrixInit();
+void updateLED(uint16_t led, uint8_t color_g,  uint8_t color_r,  uint8_t color_b);
 
-void colaInit(cola_t* cola);
-
-bool colaPush(cola_t* cola, unsigned const char data);
-
-unsigned char colaPull(cola_t* cola);
-
-/*******************************************************************************
- ******************************************************************************/
-
-#endif // _COLA_H_
+void turnOffMatrix();
+#endif // _MATRIX_H_

@@ -16,6 +16,7 @@
 #include "vumeter.h"
 
 #include <math.h>
+#include "matrix.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -26,6 +27,29 @@
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
 
+/*typedef enum {
+	HEIGHT1 = UINT16_MAX/8,
+	HEIGHT2 = 2*UINT16_MAX/8,
+	HEIGHT3 = 3*UINT16_MAX/8,
+	HEIGHT4 = 4*UINT16_MAX/8,
+	HEIGHT5 = 5*UINT16_MAX/8,
+	HEIGHT6 = 6*UINT16_MAX/8,
+	HEIGHT7 = 7*UINT16_MAX/8,
+	HEIGHT8 = 8*UINT16_MAX/8,
+} heights_t;*/
+
+typedef enum {
+	HEIGHT1 = 0,
+	HEIGHT2 = 500,
+	HEIGHT3 = 1000,
+	HEIGHT4 = 1500,
+	HEIGHT5 = 2000,
+	HEIGHT6 = 2500,
+	HEIGHT7 = 3000,
+	HEIGHT8 = 3500,
+} heights_t;
+
+
 /*******************************************************************************
  * VARIABLES WITH GLOBAL SCOPE
  ******************************************************************************/
@@ -35,9 +59,11 @@
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
 
-static int32_t myRound(float32_t num);
+static uint32_t myRound(float32_t num);
 
 static void distributeBins(int16_t* fft);
+
+static void sendBins(uint16_t* bins);
 
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -50,13 +76,13 @@ static void distributeBins(int16_t* fft);
 
 static arm_rfft_instance_q15 fftInstance;
 
-static int16_t vumeterBins[VUMETER_BIN_AMOUNT];
+static uint16_t vumeterBins[VUMETER_BIN_AMOUNT];
 
-static int16_t limits[VUMETER_BIN_AMOUNT];
+static uint16_t limits[VUMETER_BIN_AMOUNT];
 
-static int16_t fft_abs[MAX_SAMPLE_SIZE];
+static uint16_t fft_abs[MAX_SAMPLE_SIZE];
 
-static int16_t sampleSize;
+static uint16_t sampleSize;
 
 /*******************************************************************************
  *******************************************************************************
@@ -64,7 +90,7 @@ static int16_t sampleSize;
  *******************************************************************************
  ******************************************************************************/
 
-void vumeterInit(int16_t _sampleSize, int32_t fs, float32_t lowBand, float32_t highBand) {
+void vumeterInit(uint16_t _sampleSize, uint32_t fs, float32_t lowBand, float32_t highBand) {
 
 	arm_rfft_init_q15(&fftInstance, _sampleSize, 0, 1);
 
@@ -85,6 +111,8 @@ void vumeterInit(int16_t _sampleSize, int32_t fs, float32_t lowBand, float32_t h
 
 		centerBin = nextCenterBin;
 	}
+
+	matrixInit();
 }
 
 void vumeterTransform(int16_t* data) {
@@ -97,7 +125,7 @@ void vumeterTransform(int16_t* data) {
 
 	distributeBins(fft_abs);	//solucionar problema de ganancia a altas frecuencias
 
-	//aca enviar a la matriz
+	sendBins(vumeterBins);	//aca enviar a la matriz
 }
 
 /*******************************************************************************
@@ -106,16 +134,16 @@ void vumeterTransform(int16_t* data) {
  *******************************************************************************
  ******************************************************************************/
 
-static int32_t myRound(float32_t num) {
+static uint32_t myRound(float32_t num) {
 	return (num - (int)num) < 0.5 ? floor(num) : ceil(num);
 }
 
 static void distributeBins(int16_t* fft) {
-	int16_t lowerLimit = 0;
-	int32_t temp = 0;
+	uint16_t lowerLimit = 0;
+	uint32_t temp = 0;
 
-	for (int16_t bin = 0; bin < VUMETER_BIN_AMOUNT; bin++) {
-		for (int16_t i = lowerLimit; i <= limits[bin]; i++) {
+	for (uint16_t bin = 0; bin < VUMETER_BIN_AMOUNT; bin++) {
+		for (uint16_t i = lowerLimit; i <= limits[bin]; i++) {
 			temp += fft[i];
 		}
 		vumeterBins[bin] = temp / (limits[bin] - lowerLimit);
@@ -124,7 +152,53 @@ static void distributeBins(int16_t* fft) {
 	}
 }
 
+static void sendBins(uint16_t* bins) {
 
+	for(uint8_t col=0; col<COLUMNS; col++) {
+
+		if (bins[col] > HEIGHT1)
+			updateLED(col, 0b00110000, 0b00110000, 0);
+		else
+			updateLED(col, 0, 0, 0);
+
+		if (bins[col ] > HEIGHT2)
+			updateLED(col + COLUMNS, 0b00110000, 0b00110000, 0);
+		else
+			updateLED(col + COLUMNS, 0, 0, 0);
+
+		if (bins[col] > HEIGHT3)
+			updateLED(col + 2*COLUMNS, 0b00110000, 0b00110000, 0);
+		else
+			updateLED(col + 2*COLUMNS, 0, 0, 0);
+
+		if (bins[col ] > HEIGHT4)
+			updateLED(col + 3*COLUMNS, 0b00110000, 0b00110000, 0);
+		else
+			updateLED(col + 3*COLUMNS, 0, 0, 0);
+
+		if (bins[col ] > HEIGHT5)
+			updateLED(col + 4*COLUMNS, 0b00110000, 0b00110000, 0);
+		else
+			updateLED(col + 4*COLUMNS, 0, 0, 0);
+
+		if (bins[col ] > HEIGHT6)
+			updateLED(col + 5*COLUMNS, 0b00110000, 0b00110000, 0);
+		else
+			updateLED(col + 5*COLUMNS, 0, 0, 0);
+
+		if (bins[col] > HEIGHT7)
+			updateLED(col + 6*COLUMNS, 0b00110000, 0b00110000, 0);
+		else
+			updateLED(col + 6*COLUMNS, 0, 0, 0);
+
+		if (bins[col ] > HEIGHT8)
+			updateLED(col + 7*COLUMNS, 0b00110000, 0b00110000, 0);
+		else
+			updateLED(col + 7*COLUMNS, 0, 0, 0);
+
+	}
+
+}
 
 
 
