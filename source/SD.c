@@ -209,6 +209,10 @@ bool SD_isSDcard(){
 	return SDHC_isCardDetected();
 }
 
+SD_cardStatus SD_getStatus(){
+	return cardInfo.cardStatus;
+}
+
 bool SD_initializationProcess(){
 	bool success = false;
 	cardInfo.cardStatus = SD_INIT;
