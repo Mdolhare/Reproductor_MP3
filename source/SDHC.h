@@ -16,7 +16,11 @@
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-#define SDHC_CLOCK_FREQ_HZ 	(96000000U)
+#define SDHC_CLOCK_FREQ_HZ 		(96000000U)
+#define SDHC_WORD_SIZE_BYTES	(4)
+#define SDHC_WML_MAX_WORD		(128)
+#define SDHC_WML_BURST_MAX		(31)
+#define SDHC_WML_BURST_DEFAULT	(8)
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -61,6 +65,12 @@ typedef enum{
 	NO_R,R1,R1b,R2,R3,R4,R5,R5b,R6,R7
 }SDHC_cmdRespType;
 
+typedef enum{
+	BIG_E,
+	HALF_BIG_E,
+	LITTLE_E
+}SDHC_endianMode;
+
 typedef enum {
 	NO_DATA_T,
 	SINGLE_T,
@@ -95,19 +105,35 @@ typedef struct{
  ******************************************************************************/
 void SDHC_init();
 
-void SDHC_boot(sdhc_busWidth width, uint16_t blockSize);
+void SDHC_boot(SDHC_endianMode endian);
 
-void SDHC_enableCardDedection();
-
-bool SDHC_isCardDetected();
+void SDHC_setBusWidth(sdhc_busWidth width);
 
 void SDHC_setClockFrecuency(sdhc_prescaler presc, uint8_t div);
 
-bool SDHC_sendCMD(SDHC_cmd_t * cmd);
+void SDHC_setBlockSize(uint16_t blockSize);
+
+void SDHC_setDTOCounter(uint8_t power);
+
+void SDHC_setReadWMLevelAndBurstLength(uint8_t level, uint8_t burstLenght);
+
+uint32_t SDHC_getRWML();
+
+uint32_t SDHC_getData();
 
 SDHC_errType SDHC_getErrStatus();
 
 bool SDHC_getCMDstatus();
 
+bool SDHC_isCardDetected();
+
+bool SDHC_isTransferReady();
+
+bool SDHC_isBufferReadReady();
+
+bool SDHC_sendCMD(SDHC_cmd_t * cmd);
+
+
+void SDHC_enableCardDedection();
 
 #endif /* SDHC_H_ */

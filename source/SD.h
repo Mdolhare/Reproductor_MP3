@@ -20,6 +20,15 @@
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
+typedef enum {
+	SD_INIT = 0,
+	SD_NOTINIT,
+	SD_OK,
+	SD_ERROR,
+	SD_RDY,
+	SD_NOTRDY,
+} SD_cardStatus;
+
 
 
 /*******************************************************************************
@@ -29,6 +38,10 @@ void SD_init();
 
 bool SD_initializationProcess();
 
+SD_cardStatus SD_getStatus();
+
 bool SD_isSDcard();
+
+bool SD_readSectors(uint32_t address, uint32_t numSector, uint32_t * data);
 
 #endif /* SD_H_ */

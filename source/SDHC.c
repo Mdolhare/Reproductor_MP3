@@ -27,6 +27,10 @@
 #define SDHC_CMD_DAT_ERR	(SDHC_IRQSTAT_DTOE_MASK | SDHC_IRQSTAT_DEBE_MASK | SDHC_IRQSTAT_AC12E_MASK)
 #define SDHC_CMD_EN 		(SDHC_PRSSTAT_CIHB_MASK | SDHC_PRSSTAT_CDIHB_MASK)
 
+#define SDHC_WML_RDBRSTLEN_MASK                      (0x1F00U)
+#define SDHC_WML_RDBRSTLEN_SHIFT                     (8U)
+#define SDHC_WML_RDBRSTLEN(x)                        (((uint32_t)(((uint32_t)(x)) << SDHC_WML_RDBRSTLEN_SHIFT)) & SDHC_WML_RDBRSTLEN_MASK)
+
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
@@ -72,36 +76,45 @@ static SDHC_status status;
 void SDHC_init(){
 
 	//Config Hardware
-	*PCR_ADRESS(DAT0) = PORT_PCR_MUX(PORT_mAlt4);
-	*PCR_ADRESS(DAT1) = PORT_PCR_MUX(PORT_mAlt4);
-	*PCR_ADRESS(DAT2) = PORT_PCR_MUX(PORT_mAlt4);
-	*PCR_ADRESS(DAT3_CD) = PORT_PCR_MUX(PORT_mAlt4);
-	*PCR_ADRESS(CMD) = PORT_PCR_MUX(PORT_mAlt4);
-	*PCR_ADRESS(CLK) = PORT_PCR_MUX(PORT_mAlt4);
-	*PCR_ADRESS(SW_DETECT) = PORT_PCR_MUX(PORT_mGPIO) | PORT_PCR_PE_MASK ;
+	*PCR_ADRESS(DAT0)		= PORT_PCR_MUX(PORT_mAlt4) | PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
+	*PCR_ADRESS(DAT1)		= PORT_PCR_MUX(PORT_mAlt4) | PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
+	*PCR_ADRESS(DAT2)		= PORT_PCR_MUX(PORT_mAlt4) | PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
+	*PCR_ADRESS(DAT3_CD)	= PORT_PCR_MUX(PORT_mAlt4) | PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
+	*PCR_ADRESS(CMD) 		= PORT_PCR_MUX(PORT_mAlt4) | PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
+	*PCR_ADRESS(CLK) 		= PORT_PCR_MUX(PORT_mAlt4);
+	*PCR_ADRESS(SW_DETECT) 	= PORT_PCR_MUX(PORT_mGPIO) | PORT_PCR_PE_MASK;
 
 	gpioMode(SW_DETECT, INPUT_PULLDOWN);
 
-
-	SIM->SCGC3 |= SIM_SCGC3_SDHC_MASK;
 	SIM->SOPT2 &= ~SIM_SOPT2_SDHCSRC_MASK;
 
-	NVIC_EnableIRQ(SDHC_IRQn);
+	SIM->SCGC3 |= SIM_SCGC3_SDHC_MASK;
+
+	//NVIC_EnableIRQ(SDHC_IRQn);
 
 }
 
-void SDHC_boot(sdhc_busWidth width, uint16_t blockSize){
+void SDHC_boot(SDHC_endianMode endian){
+
+	//software reset all
 	SDHC->SYSCTL |= SDHC_SYSCTL_RSTA_MASK;
 
+	//irq deshabilitadas
+	SDHC->IRQSIGEN = 0;
+
+	//80clocks para iniciar comunicacion con tarjeta
 	SDHC->SYSCTL |= SDHC_SYSCTL_INITA_MASK;
 
-	SDHC->BLKATTR |= SDHC_BLKATTR_BLKSIZE(blockSize);
+	SDHC->PROCTL |= SDHC_PROCTL_DTW(1) | SDHC_PROCTL_EMODE(endian);
 
-	SDHC->PROCTL |= SDHC_PROCTL_DTW(width);
+	SDHC->VENDOR = 0;
 
 
 }
 
+void SDHC_setBusWidth(sdhc_busWidth width){
+	SDHC->PROCTL |= SDHC_PROCTL_DTW(width);
+}
 
 void SDHC_enableCardDedection(){
 	//Habilita lectura de evento
@@ -116,15 +129,59 @@ bool SDHC_isCardDetected(){
 }
 
 void SDHC_setClockFrecuency(sdhc_prescaler presc, uint8_t div){
-
 	SDHC->SYSCTL &= SDHC_SYSCTL_SDCLKEN_MASK;
 	SDHC->SYSCTL |= SDHC_SYSCTL_SDCLKFS(presc) | SDHC_SYSCTL_DVS(div);
 	while(!(SDHC->PRSSTAT & SDHC_PRSSTAT_SDSTB_MASK));
 	SDHC->SYSCTL |= SDHC_SYSCTL_SDCLKEN_MASK;
+
+
+}
+
+void SDHC_setBlockSize(uint16_t blockSize){
+	SDHC->BLKATTR &= ~SDHC_BLKATTR_BLKSIZE_MASK;
+	SDHC->BLKATTR |= SDHC_BLKATTR_BLKSIZE(blockSize);
+}
+
+void SDHC_setReadWMLevelAndBurstLength(uint8_t level, uint8_t burstLenght){
+	SDHC->WML &= ~(SDHC_WML_RDBRSTLEN_MASK|SDHC_WML_RDWML_MASK);
+	SDHC->WML |= SDHC_WML_RDWML(level) | SDHC_WML_RDBRSTLEN(burstLenght);
+}
+
+uint32_t SDHC_getData(){
+	return SDHC->DATPORT;
+}
+
+uint32_t SDHC_getRWML(){
+	return SDHC->WML & SDHC_WML_RDWML_MASK;
 }
 
 SDHC_errType SDHC_getErrStatus(){
 	return status.err;
+}
+
+bool SDHC_isTransferReady(){
+	bool transferReady = false;
+	if(SDHC->IRQSTAT & SDHC_IRQSTAT_TC_MASK){
+		SDHC->IRQSTAT |= SDHC_IRQSTAT_TC_MASK; 	//clear flag
+		transferReady = true;
+	}
+	return transferReady;
+}
+
+void SDHC_setDTOCounter(uint8_t power){
+	SDHC->SYSCTL &= ~SDHC_SYSCTL_DTOCV_MASK;
+	SDHC->SYSCTL |= SDHC_SYSCTL_DTOCV(power - 13);
+}
+
+bool SDHC_isBufferReadReady(){
+	bool buffReady = false;
+	if(SDHC->IRQSTAT & SDHC_IRQSTAT_BRR_MASK){
+		SDHC->IRQSTAT |= SDHC_IRQSTAT_BRR_MASK; 	//clear flag
+		buffReady = true;
+	}
+	return buffReady;
+
+//	return SDHC->PRSSTAT & SDHC_PRSSTAT_BREN_MASK;
 }
 
 bool SDHC_sendCMD(SDHC_cmd_t * cmd){
@@ -170,30 +227,33 @@ bool SDHC_sendCMD(SDHC_cmd_t * cmd){
 					((cmd->card_to_sdhc) ? SDHC_XFERTYP_DTDSEL_MASK : 0);
 		xfertypReg |= ((cmd->cmd_transfer_type == MULTIPLE_T) ? SDHC_XFERTYP_AC12EN_MASK : 0);
 
-		SDHC->BLKATTR |= SDHC_BLKATTR_BLKCNT(cmd->block_count);
+		if(cmd->cmd_transfer_type == MULTIPLE_T){
+			SDHC->BLKATTR &= ~SDHC_BLKATTR_BLKCNT_MASK;
+			SDHC->BLKATTR = SDHC_BLKATTR_BLKCNT(cmd->block_count) | SDHC_BLKATTR_BLKSIZE(512);
+		}
+		useDatLine = true;
 	}
+
+	SDHC->IRQSTATEN |= SDHC_IRQSTATEN_BRRSEN_MASK | SDHC_IRQSTATEN_TCSEN_MASK;
 
 	if(!(SDHC->PRSSTAT & SDHC_CMD_EN)){
 		SDHC->CMDARG = cmd->cmd_arg;
 		SDHC->XFERTYP = xfertypReg;
+		//wait response of command
+		while(! (SDHC->IRQSTAT & SDHC_IRQSTAT_CC_MASK) );
+
+		uint8_t i;
+		for(i = 0; i < cmd->cmd_lenght_resp; i++){
+			cmd->response[i] = SDHC->CMDRSP[i];
+		}
+
+		status.err = SDHC_checkErrInCMD(useDatLine);
+		SDHC->IRQSTAT |= SDHC_IRQSTAT_CC_MASK;
 	}
 	else{
 		return false;
 	}
-
-
-	//wait response of command
-	while(! (SDHC->IRQSTAT & SDHC_IRQSTAT_CC_MASK) );
-	SDHC->IRQSTAT |= SDHC_IRQSTAT_CC_MASK;
-
-	uint8_t i;
-	for(i = 0; i < cmd->cmd_lenght_resp; i++){
-		cmd->response[i] = SDHC->CMDRSP[i];
-	}
-
-	bool err = SDHC_checkErrInCMD(useDatLine);
-
-	return err;
+	return true;
 }
 
 bool SDHC_getCMDstatus(){
@@ -208,24 +268,31 @@ bool SDHC_getCMDstatus(){
  ******************************************************************************/
 static bool SDHC_checkErrInCMD(bool useDatLine){
 	if( SDHC->IRQSTAT & (SDHC_CMD_ERR | (useDatLine ? SDHC_CMD_DAT_ERR:0) ) ){
-		if(SDHC->IRQSTAT & SDHC_IRQSTAT_CTOE_MASK){
-			status.err |= ERR_CMD_TIME_OUT;
-		}
-		if(SDHC->IRQSTAT & SDHC_IRQSTAT_CCE_MASK){
-			status.err |= ERR_CMD_CRC;
-		}
-		if(useDatLine){
-			if(SDHC->IRQSTAT & SDHC_IRQSTAT_DTOE_MASK){
-				status.err |= ERR_CMD_DAT_TIME_OUT;
-			}
-			if(SDHC->IRQSTAT & SDHC_IRQSTAT_DEBE_MASK){
-				status.err |= ERR_CMD_DAT_END_BIT;
-			}
-			if(SDHC->IRQSTAT & SDHC_IRQSTAT_AC12E_MASK){
-				status.err |= ERR_CMD_DAT_AC12;
-			}
-		}
 		return false;
+	}
+	if(SDHC->IRQSTAT & SDHC_IRQSTAT_CTOE_MASK){
+		status.err |= ERR_CMD_TIME_OUT;
+		return false;
+	}
+	if(SDHC->IRQSTAT & SDHC_IRQSTAT_CCE_MASK){
+		status.err |= ERR_CMD_CRC;
+		return false;
+	}
+	if(useDatLine){
+		if(SDHC->IRQSTAT & SDHC_IRQSTAT_DTOE_MASK){
+			status.err |= ERR_CMD_DAT_TIME_OUT;
+			return false;
+		}
+		if(SDHC->IRQSTAT & SDHC_IRQSTAT_DEBE_MASK){
+			status.err |= ERR_CMD_DAT_END_BIT;
+			return false;
+
+		}
+		if(SDHC->IRQSTAT & SDHC_IRQSTAT_AC12E_MASK){
+			status.err |= ERR_CMD_DAT_AC12;
+			return false;
+
+		}
 	}
 	return true;
 }
