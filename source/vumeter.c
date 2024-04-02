@@ -161,7 +161,7 @@ static void sendBins(uint16_t* bins) {
 		else
 			updateLED(col, 0, 0, 0);
 
-		if (bins[col ] > HEIGHT2)
+		if (bins[col] > HEIGHT2)
 			updateLED(col + COLUMNS, 0b00110000, 0b00110000, 0);
 		else
 			updateLED(col + COLUMNS, 0, 0, 0);
