@@ -11,9 +11,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "SD.h"
-#include "gpio.h"
-#include "ff.h"
+#include "Drivers/HAL/SD/SD.h"
+#include "Drivers/MCAL/Gpio/gpio.h"
+#include "FAT/ff.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -39,19 +39,19 @@
  *                      GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  *******************************************************************************/
-
+/*
 void App_Init (void){
 	SD_init();
 	gpioMode(LED_B, OUTPUT);
 	gpioWrite(LED_B,1);
 }
-
+*/
 
 
 
 /* Función que se llama constantemente en un ciclo infinito */
 
-void App_Run (void) {
+void App_Run_2 (void) {
 
 	bool ok = true;
 	uint32_t data[50000] = {0};
@@ -128,4 +128,3 @@ void App_Run (void) {
 
 
 }
-

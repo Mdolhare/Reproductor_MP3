@@ -9,7 +9,7 @@
 
 #include "ff.h"			/* Obtains integer types */
 #include "diskio.h"		/* Declarations of disk functions */
-#include "SD.h"
+#include "Drivers/HAL/SD/SD.h"
 
 /* Definitions of physical drive number for each drive */
 #define DEV_SD		0	/* Example: Map SD to physical drive 0 */

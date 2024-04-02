@@ -8,8 +8,9 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 
-#include "vumeter.h"
-#include "fsm.h"
+#include "Vumeter/vumeter.h"
+#include "FSM/fsm.h"
+
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE

@@ -16,7 +16,7 @@
 #include "vumeter.h"
 
 #include <math.h>
-#include "matrix.h"
+#include "Drivers/HAL/Matrix/matrix.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
