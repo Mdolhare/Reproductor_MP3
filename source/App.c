@@ -8,25 +8,29 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 
-#include "Drivers/MCAL/DMA/dma.h"
-#include "Drivers/MCAL/PIT/pit.h"
-#include "Drivers/MCAL/DAC/DAC.h"
-#include "sen.h"
-#include "sen2.h"
+#include <stdint.h>
+#include <stdbool.h>
 
+#include "SD.h"
+#include "gpio.h"
+#include "ff.h"
+#include "Audio/audio.h"
+#include "../helix/pub/mp3dec.h"
+#include "pit.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-
-#define EVER (;;)
+#define LED_B PORTNUM2PIN(PB,21)
 
 /*******************************************************************************
- * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
+ * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
 
-static TCD_t tcd[2] __attribute__((aligned(32)));
-static tcd_cfg_t configs[2];
+/*******************************************************************************
+ * VARIABLES WITH GLOBAL SCOPE
+ ******************************************************************************/
+
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
@@ -35,70 +39,103 @@ static tcd_cfg_t configs[2];
 
 /*******************************************************************************
  *******************************************************************************
-                        GLOBAL FUNCTION DEFINITIONS
+ *                      GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
- ******************************************************************************/
+ *******************************************************************************/
+void pitFunc(void);
 
-/* Función que se llama 1 vez, al comienzo del programa */
 void App_Init (void) {
 
+	SD_init();
+	gpioMode(LED_B, OUTPUT);
+	gpioWrite(LED_B,1);
+
 }
+
+
+
 
 /* Función que se llama constantemente en un ciclo infinito */
-void App_Run (void) {
+void App_Run(void) {
+	bool ok=false;
 
-	DAC_Init(true);
-	pitInit();
 
-	uint8_t* destination = DAC_getPtrToDat();
 
-	configs[0].source = (uint32_t)sen;
-	configs[0].destination = (uint32_t)destination;
-	configs[0].sOffset = 2;
-	configs[0].dOffset = 0;
-	configs[0].sTransferSize = dma16BIT;
-	configs[0].dTransferSize = dma16BIT;
-	configs[0].byteAmount = 2;
-	configs[0].minorLoopIter = sizeof(sen)/sizeof(sen[0]);
-	configs[0].sShiftBack = 0;
-	configs[0].dShiftBack = (uint32_t)&tcd[1];
-	configs[0].sCircBuff = 0;
-	configs[0].dCircBuff = 0;
+	while(1){
+		if(SD_isSDcard()){
+			ok = SD_initializationProcess();
+			if(ok){
+				//se inicializo bien la tarjeta
+				break;
+			}
+			while(1);
+		}
+		else{
+				//
+		}
+	}
 
-	configs[1].source = (uint32_t)sen2;
-	configs[1].destination = (uint32_t)destination;
-	configs[1].sOffset = 2;
-	configs[1].dOffset = 0;
-	configs[1].sTransferSize = dma16BIT;
-	configs[1].dTransferSize = dma16BIT;
-	configs[1].byteAmount = 2;
-	configs[1].minorLoopIter = sizeof(sen2)/sizeof(sen2[0]);
-	configs[1].sShiftBack = 0;
-	configs[1].dShiftBack = (uint32_t)&tcd[0];
-	configs[1].sCircBuff = 0;
-	configs[1].dCircBuff = 0;
 
-	dma_config_scatter_gather(configs, tcd, 2);
+	MP3FrameInfo frameInfo;
 
-	//dma_add_irq(dmaCHANNEL0, flagHandler, &(tcd[0]), false, true);
-	//dma_add_irq(dmaCHANNEL0, flagHandler, &(tcd[1]), false, true);
+	decoderInit();
+	uint16_t frame_decode_1[3000] = {0};
+	uint16_t frame_decode_2[3000] = {0};
 
-	dma_begin(dmaCHANNEL0, dmaDMA_MUX_5, true, &(tcd[0]));
+	//lee para open
+	if(decoderGetFrame(frame_decode_1, &frameInfo)){
 
-	pitSetAndBegin(PIT_0, 1000);
+		}
+	else{
+			while(1);
+		}
+	//Lee para primer frame, tener datos
+	if(decoderGetFrame(frame_decode_1, &frameInfo)){
 
-	while(true);
+			}
+		else{
+				while(1);
+			}
+
+
+
+	bool transfer_to_dac_1 = true;
+	bool buffer_complete = false;
+	audio_init(frameInfo.samprate, frame_decode_1, frame_decode_2, frameInfo.outputSamps, &transfer_to_dac_1 );
+	audio_resume();
+	bool transfer_to_dac_1_prev = transfer_to_dac_1;
+	while(1){
+
+	if(transfer_to_dac_1 && !buffer_complete)
+	{
+		if(decoderGetFrame(frame_decode_2, &frameInfo)){
+					buffer_complete = true;
+		}
+		else{
+			while(1);
+		}
+	}
+
+	else if(!transfer_to_dac_1 && !buffer_complete)
+	{
+		if(decoderGetFrame(frame_decode_1, &frameInfo)){
+							buffer_complete = true;
+		}
+		else{
+			while(1);
+		}
+	}
+
+	if(transfer_to_dac_1_prev != transfer_to_dac_1)
+	{
+		buffer_complete = false;
+		transfer_to_dac_1_prev = transfer_to_dac_1;
+	}
+	}
 }
 
+void pitFunc(void)
+{
+	int i;
+}
 
-
-/*******************************************************************************
- *******************************************************************************
-                        LOCAL FUNCTION DEFINITIONS
- *******************************************************************************
- ******************************************************************************/
-
-
-
-/*******************************************************************************
- ******************************************************************************/
