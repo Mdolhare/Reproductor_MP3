@@ -13,8 +13,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "port.h"
-#include "gpio.h"
+#include "../Port/port.h"
+#include "../Gpio/gpio.h"
 
 
 /*******************************************************************************

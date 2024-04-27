@@ -7,8 +7,8 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 #include "PWM.h"
-#include "FTMG2.h"
-#include "port.h"
+#include "../FTM/FTMG2.h"
+#include "../Port/port.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE

@@ -7,8 +7,8 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 #include "SDHC.h"
-#include "port.h"
-#include "gpio.h"
+#include "../Port/port.h"
+#include "../Gpio/gpio.h"
 #include "MK64F12.h"
 #include <stdbool.h>
 /*******************************************************************************

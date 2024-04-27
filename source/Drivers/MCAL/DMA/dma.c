@@ -8,9 +8,9 @@
  ******************************************************************************/
 
 #include "MK64F12.h"
-#include "dma.h"
+#include "../DMA/dma.h"
 #include "hardware.h"
-#include "board.h"
+#include "../Board/board.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE

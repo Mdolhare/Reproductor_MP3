@@ -1,6 +1,6 @@
 
-#include "pit.h"
-#include "gpio.h"
+#include "../PIT/pit.h"
+#include "../Gpio/gpio.h"
 #include "MK64F12.h"
 #include "hardware.h"
 
@@ -45,6 +45,7 @@ void pitSetAndBegin(uint32_t channel, uint32_t time) {
 	PIT->CHANNEL[channel].LDVAL = val;
 	PIT->CHANNEL[channel].TCTRL |= PIT_TCTRL_TEN_MASK;
 }
+
 void pitStopTimer(uint32_t channel){
 	PIT->CHANNEL[channel].TCTRL &= ~PIT_TCTRL_TEN_MASK;
 }

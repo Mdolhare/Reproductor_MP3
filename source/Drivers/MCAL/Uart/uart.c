@@ -8,10 +8,10 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 #include "uart.h"
-#include "port.h"
-#include "cola.h"
-#include "gpio.h"
-#include "/Drivers/MCAL/Board/board.h"
+#include "../Port/port.h"
+#include "../../../Queue/cola.h"
+#include "../Gpio/gpio.h"
+#include "../Board/board.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE

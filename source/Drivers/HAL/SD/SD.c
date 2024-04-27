@@ -7,9 +7,9 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 #include "SD.h"
-#include "SDHC.h"
-#include "pit.h"
-#include "gpio.h"
+#include "../../MCAL/SDHC/SDHC.h"
+#include "../../MCAL/PIT/pit.h"
+#include "../../MCAL/Gpio/gpio.h"
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/

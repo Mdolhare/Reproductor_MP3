@@ -8,12 +8,12 @@
  ******************************************************************************/
 
 #include "matrix.h"
-#include "board.h"
-#include "gpio.h"
-#include "pit.h"
-#include "PWM.h"
-#include "dma.h"
-#include "FTMG2.h"
+#include "../../MCAL/Board/board.h"
+#include "../../MCAL/Gpio/gpio.h"
+#include "../../MCAL/PIT/pit.h"
+#include "../../MCAL/PWM/PWM.h"
+#include "../../MCAL/DMA/dma.h"
+#include "../../MCAL/FTM/FTMG2.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
