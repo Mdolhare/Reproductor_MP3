@@ -1,8 +1,9 @@
 
-#include "SD.h"
-#include "gpio.h"
-#include "ff.h"
+#include "../Drivers/HAL/SD/SD.h"
+#include "../Drivers/MCAL/Gpio/gpio.h"
+#include "../FAT/ff.h"
 #include "mp3decoder.h"
+
 #define MAX_SIZE_FRAME 1940 //chequear
 
 static HMP3Decoder decoder;
@@ -12,16 +13,9 @@ static bool  file_was_open = false;
 static unsigned char* out_buffer[4096*400];
 
 
-FATFS FatFs;		/* FatFs work area needed for each volume */
-FIL FileMP3;		/* File object needed for each open file */
-FRESULT fr;
-
-typedef struct {
-
-    unsigned char* data[MAX_DATA_SIZE];
-    DECODED_FRAME* decodedFrames[MAX_FRAMES];
-
-} audio;
+static FATFS FatFs;		/* FatFs work area needed for each volume */
+static FIL FileMP3;		/* File object needed for each open file */
+static FRESULT fr;
 
 
 
@@ -42,26 +36,29 @@ uint16_t decoderGetBitrate(unsigned char *buf, uint32_t bytesLeft) {
 
 
 
-bool decoderGetFrame(unsigned char *frame_decode, int* bitrate, int* outSamps)
+bool decoderGetFrame(unsigned char *frame_decode,MP3FrameInfo * _frameInfo)
 {
 	uint8_t buffer_info_file[MAX_SIZE_FRAME];
 	  //ver stereo
 	uint32_t offset;
 	uint32_t bytesLeft = 0;
 	uint32_t bytesRead = 0;
-	fr = f_open(&FileMP3, "himno1.mp3", FA_READ);
+	//
+	//
 	if (!file_was_open)
 	{
-		return false;
+		fr = f_mount(&FatFs, "", 0);
+		fr = f_open(&FileMP3, "himno1.mp3", FA_READ);
+		file_was_open = true;
 	}
 	else
 	{
-		while(f_eof(&FileMP3))
+		while(!f_eof(&FileMP3))
 		{
 			if(f_read(&FileMP3, buffer_info_file + bytesLeft, MAX_SIZE_FRAME -  bytesLeft, &bytesRead  ) == FR_OK)
 			{
 
-			    offset = MPF3indSyncWord(buffer_info_file, bytesRead);
+			    offset = MP3FindSyncWord(buffer_info_file, bytesRead);
 			    if(offset < 0) //error
 			    {
 			    	continue;
@@ -71,9 +68,12 @@ bool decoderGetFrame(unsigned char *frame_decode, int* bitrate, int* outSamps)
 			    unsigned char* buffer_info_file_aux  = buffer_info_file + offset;
 			    bytesLeft = bytesRead - offset;
 
-			    MP3GetNextFrameInfo(decoder, &frameInfo, buffer_info_file_aux);
-			    *bitrate = frameInfo.bitrate;
-			    uint8_t error = MP3Decode(decoder, &buffer_info_filer, &bytesLeft, frame_decode, 0);
+			    MP3GetNextFrameInfo(decoder, _frameInfo, buffer_info_file_aux);
+
+			    uint8_t error = MP3Decode(decoder, &buffer_info_file_aux, &bytesLeft,(short*)frame_decode, 0);
+
+			    f_lseek(&FileMP3, f_tell(&FileMP3)- bytesLeft);
+
 			    if (!error)
 			    {
 			    	return true;
@@ -91,6 +91,7 @@ bool decoderGetFrame(unsigned char *frame_decode, int* bitrate, int* outSamps)
 
 
 		}
+		return false;
 	}
 
 

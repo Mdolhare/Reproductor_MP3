@@ -11,12 +11,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "SD.h"
-#include "gpio.h"
-#include "ff.h"
+#include "Drivers/HAL/SD/SD.h"
+#include "Drivers/MCAL/Gpio/gpio.h"
+#include "FAT/ff.h"
 #include "Audio/audio.h"
 #include "../helix/pub/mp3dec.h"
-#include "pit.h"
+#include "Drivers/MCAL/PIT/pit.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE

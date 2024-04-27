@@ -12,7 +12,7 @@
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
-#include "mp3dec.h"
+#include "../../helix/pub/mp3dec.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -36,7 +36,7 @@
 
 
  void decoderInit(void);
- bool decoderGetFrame(unsigned char *frame_decode, int* bitrate, int* outSamps);
+ bool decoderGetFrame(unsigned char *frame_decode, MP3FrameInfo * _frameInfo);
 
 
 
