@@ -39,12 +39,12 @@ void audio_init(uint32_t _fs, uint16_t* source, uint16_t* source2, uint32_t fram
 
     configs[0].source = (uint32_t)source;
     configs[0].destination = (uint32_t)destination;
-    configs[0].sOffset = 2;
+    configs[0].sOffset = 4;
     configs[0].dOffset = 0;
     configs[0].sTransferSize = dma16BIT;
     configs[0].dTransferSize = dma16BIT;
     configs[0].byteAmount = 2;
-    configs[0].minorLoopIter = frameSize;
+    configs[0].minorLoopIter = frameSize/2;
     configs[0].sShiftBack = 0;
     configs[0].dShiftBack = (uint32_t)&tcd[1];
     configs[0].sCircBuff = 0;
@@ -52,12 +52,12 @@ void audio_init(uint32_t _fs, uint16_t* source, uint16_t* source2, uint32_t fram
 
     configs[1].source = (uint32_t)source2;
 	configs[1].destination = (uint32_t)destination;
-	configs[1].sOffset = 2;
+	configs[1].sOffset = 4;
 	configs[1].dOffset = 0;
 	configs[1].sTransferSize = dma16BIT;
 	configs[1].dTransferSize = dma16BIT;
 	configs[1].byteAmount = 2;
-	configs[1].minorLoopIter = frameSize;
+	configs[1].minorLoopIter = frameSize/2;
 	configs[1].sShiftBack = 0;
 	configs[1].dShiftBack = (uint32_t)&tcd[0];
 	configs[1].sCircBuff = 0;
@@ -90,7 +90,11 @@ void audio_pause(){
 
 static void flagHandler(void) {
 
-	*flag = ~(*flag);
+	*flag = !(*flag);
+
+	if (!(*flag)) {
+		int a = 0;
+	}
 
 }
 

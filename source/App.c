@@ -79,8 +79,16 @@ void App_Run(void) {
 	MP3FrameInfo frameInfo;
 
 	decoderInit();
-	uint16_t frame_decode_1[3000] = {0};
-	uint16_t frame_decode_2[3000] = {0};
+	int16_t frame_decode_1[3000] = {0};
+	int16_t frame_decode_2[3000] = {0};
+	uint16_t frame_decode_3[3000] = {0};
+	uint16_t frame_decode_4[3000] = {0};
+	uint16_t frame_decode_5[3000] = {0};
+	uint16_t frame_decode_6[3000] = {0};
+	uint16_t frame_decode_7[3000] = {0};
+	uint16_t frame_decode_8[3000] = {0};
+
+
 
 	//lee para open
 	if(decoderGetFrame(frame_decode_1, &frameInfo)){
@@ -92,10 +100,22 @@ void App_Run(void) {
 	//Lee para primer frame, tener datos
 	if(decoderGetFrame(frame_decode_1, &frameInfo)){
 
-			}
-		else{
-				while(1);
-			}
+	}
+	else{
+		while(1);
+	}
+	uint32_t i = 0;
+	for(i = 0; i < 3000; i++){
+		frame_decode_1[i] = frame_decode_1[i]/4;
+	}
+//	decoderGetFrame(frame_decode_2, &frameInfo);
+//	decoderGetFrame(frame_decode_3, &frameInfo);
+//	decoderGetFrame(frame_decode_4, &frameInfo);
+//	decoderGetFrame(frame_decode_5, &frameInfo);
+//	decoderGetFrame(frame_decode_6, &frameInfo);
+//	decoderGetFrame(frame_decode_7, &frameInfo);
+//	decoderGetFrame(frame_decode_8, &frameInfo);
+
 
 
 
@@ -106,31 +126,37 @@ void App_Run(void) {
 	bool transfer_to_dac_1_prev = transfer_to_dac_1;
 	while(1){
 
-	if(transfer_to_dac_1 && !buffer_complete)
-	{
-		if(decoderGetFrame(frame_decode_2, &frameInfo)){
-					buffer_complete = true;
+		if(transfer_to_dac_1 && !buffer_complete)
+		{
+			if(decoderGetFrame(frame_decode_2, &frameInfo)){
+				buffer_complete = true;
+				for(i = 0; i < 3000; i++){
+					frame_decode_2[i] = frame_decode_2[i]/16 + 8192;
+				}
+			}
+			else{
+				while(1);
+			}
 		}
-		else{
-			while(1);
-		}
-	}
 
-	else if(!transfer_to_dac_1 && !buffer_complete)
-	{
-		if(decoderGetFrame(frame_decode_1, &frameInfo)){
-							buffer_complete = true;
+		else if(!transfer_to_dac_1 && !buffer_complete)
+		{
+			if(decoderGetFrame(frame_decode_1, &frameInfo)){
+				buffer_complete = true;
+				for(i = 0; i < 3000; i++){
+					frame_decode_1[i] = frame_decode_1[i]/16 + 8192;
+				}
+			}
+			else{
+				while(1);
+			}
 		}
-		else{
-			while(1);
-		}
-	}
 
-	if(transfer_to_dac_1_prev != transfer_to_dac_1)
-	{
-		buffer_complete = false;
-		transfer_to_dac_1_prev = transfer_to_dac_1;
-	}
+		if(transfer_to_dac_1_prev != transfer_to_dac_1)
+		{
+			buffer_complete = false;
+			transfer_to_dac_1_prev = transfer_to_dac_1;
+		}
 	}
 }
 

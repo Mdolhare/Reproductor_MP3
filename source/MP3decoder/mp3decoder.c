@@ -70,7 +70,7 @@ bool decoderGetFrame(unsigned char *frame_decode,MP3FrameInfo * _frameInfo)
 
 			    MP3GetNextFrameInfo(decoder, _frameInfo, buffer_info_file_aux);
 
-			    uint8_t error = MP3Decode(decoder, &buffer_info_file_aux, &bytesLeft,(short*)frame_decode, 0);
+			    uint8_t error = MP3Decode(decoder, &buffer_info_file_aux, &bytesLeft,(int16_t*)frame_decode, 0);
 
 			    f_lseek(&FileMP3, f_tell(&FileMP3)- bytesLeft);
 
