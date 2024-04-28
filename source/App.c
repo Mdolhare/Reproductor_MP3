@@ -47,8 +47,8 @@ void pitFunc(void);
 void App_Init (void) {
 
 	SD_init();
-	gpioMode(LED_B, OUTPUT);
-	gpioWrite(LED_B,1);
+//	gpioMode(LED_B, OUTPUT);
+//	gpioWrite(LED_B,1);
 
 }
 
@@ -130,8 +130,10 @@ void App_Run(void) {
 		{
 			if(decoderGetFrame(frame_decode_2, &frameInfo)){
 				buffer_complete = true;
-				for(i = 0; i < 3000; i++){
-					frame_decode_2[i] = frame_decode_2[i]/16 + 8192;
+				for (int i = 0; i < 3000; i++) {
+					//frame_decode_2[i] += 0x8000U;
+					//frame_decode_2[i] *= (double)0xFFFU / 0xFFFFU;
+					frame_decode_2[i] = (frame_decode_2[i]+32768)>>4;
 				}
 			}
 			else{
@@ -143,8 +145,13 @@ void App_Run(void) {
 		{
 			if(decoderGetFrame(frame_decode_1, &frameInfo)){
 				buffer_complete = true;
-				for(i = 0; i < 3000; i++){
-					frame_decode_1[i] = frame_decode_1[i]/16 + 8192;
+				//for(i = 0; i < 3000; i++){
+				//	frame_decode_1[i] = frame_decode_1[i]/16 + 8192;
+				//}
+				for (int i = 0; i < 3000; i++) {
+					//frame_decode_1[i] += 0x8000U;
+					//frame_decode_1[i] *= (double)0xFFFU / 0xFFFFU;
+					frame_decode_1[i] = (frame_decode_1[i]+32768)>>4;
 				}
 			}
 			else{
