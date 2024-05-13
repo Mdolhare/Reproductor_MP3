@@ -43,20 +43,42 @@
  *******************************************************************************
  *******************************************************************************/
 void pitFunc(void);
+void playPause(void);
 
 void App_Init (void) {
 
 	SD_init();
 //	gpioMode(LED_B, OUTPUT);
 //	gpioWrite(LED_B,1);
+	gpioMode(PORTNUM2PIN(PA,4),INPUT);
+	gpioIRQ(PORTNUM2PIN(PA,4),GPIO_IRQ_MODE_FALLING_EDGE, playPause);
+}
 
+void App_Run(){
+	bool ok=false;
+	while(1){
+		if(SD_isSDcard()){
+			ok = SD_initializationProcess();
+			if(ok){
+				//se inicializo bien la tarjeta
+				break;
+			}
+			while(1);
+		}
+		else{
+				//
+		}
+	}
+
+	playMusicInit();
+
+	while(1)
+		playMusic();
 }
 
 
-
-
 /* Función que se llama constantemente en un ciclo infinito */
-void App_Run(void) {
+void App_Run_1(void) {
 	bool ok=false;
 
 
@@ -122,6 +144,7 @@ void App_Run(void) {
 	bool transfer_to_dac_1 = true;
 	bool buffer_complete = false;
 	audio_init(frameInfo.samprate, frame_decode_1, frame_decode_2, frameInfo.outputSamps, &transfer_to_dac_1 );
+	gpioIRQ(PORTNUM2PIN(PA,4),GPIO_IRQ_MODE_FALLING_EDGE, playPause);
 	audio_resume();
 	bool transfer_to_dac_1_prev = transfer_to_dac_1;
 	while(1){
@@ -172,3 +195,14 @@ void pitFunc(void)
 	int i;
 }
 
+void playPause(void){
+	static bool isPlaying = true;
+	if(isPlaying){
+		audio_pause();
+		isPlaying = false;
+	}
+	else{
+		audio_resume();
+		isPlaying = true;
+	}
+}
