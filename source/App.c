@@ -8,8 +8,13 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 
+#include "MK64F12.h"
+#include "arm_math.h"
+
 #include <stdint.h>
 #include <stdbool.h>
+
+
 
 #include "Drivers/HAL/SD/SD.h"
 #include "Drivers/MCAL/Gpio/gpio.h"
@@ -17,6 +22,14 @@
 #include "Audio/audio.h"
 #include "../helix/pub/mp3dec.h"
 #include "Drivers/MCAL/PIT/pit.h"
+#include "sen.h"
+#include "Vumeter/vumeter.h"
+
+
+
+
+//en el concector jack VERDE es GND
+
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -52,6 +65,21 @@ void App_Init (void) {
 //	gpioWrite(LED_B,1);
 	gpioMode(PORTNUM2PIN(PA,4),INPUT);
 	gpioIRQ(PORTNUM2PIN(PA,4),GPIO_IRQ_MODE_FALLING_EDGE, playPause);
+}
+
+void App_Init_2 (void) {
+
+//	vumeterTransform(sine_wave);
+
+}
+
+
+void App_Run_5(){
+	vumeterInit(80, 44100, 80, 15000);
+
+	vumeterTransform(sine_wave);
+
+	while(1);
 }
 
 void App_Run(){
@@ -196,7 +224,7 @@ void pitFunc(void)
 }
 
 void playPause(void){
-	static bool isPlaying = true;
+	static bool isPlaying = false;
 	if(isPlaying){
 		audio_pause();
 		isPlaying = false;

@@ -16,7 +16,7 @@
 #include "vumeter.h"
 
 #include <math.h>
-#include "Drivers/HAL/Matrix/matrix.h"
+#include "../Drivers/HAL/Matrix/matrix.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -146,7 +146,10 @@ static void distributeBins(int16_t* fft) {
 		for (uint16_t i = lowerLimit; i <= limits[bin]; i++) {
 			temp += fft[i];
 		}
-		vumeterBins[bin] = temp / (limits[bin] - lowerLimit);
+
+		vumeterBins[bin] = temp;//(temp / (limits[bin] - lowerLimit))*10;
+
+
 		temp = 0;
 		lowerLimit = limits[bin] + 1;
 	}
@@ -161,7 +164,7 @@ static void sendBins(uint16_t* bins) {
 		else
 			updateLED(col, 0, 0, 0);
 
-		if (bins[col] > HEIGHT2)
+		if (bins[col ] > HEIGHT2)
 			updateLED(col + COLUMNS, 0b00110000, 0b00110000, 0);
 		else
 			updateLED(col + COLUMNS, 0, 0, 0);

@@ -20,6 +20,7 @@ enum pits {PIT_0, PIT_1, PIT_2, PIT_3};
 
 void pitInit(void);
 
+
 void pitSetAndBegin(uint32_t channel, uint32_t time);
 
 void pitStopTimer(uint32_t channel);

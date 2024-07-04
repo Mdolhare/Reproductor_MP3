@@ -41,8 +41,13 @@
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
 
-static int16_t frame_decode_1[3000];
-static int16_t frame_decode_2[3000];
+static int16_t frame_decode_1[4096];
+
+static int16_t frame_deepcopy_1[4096];
+
+static int16_t frame_decode_2[4096];
+
+static int16_t frame_deepcopy_2[4096];
 
 static bool transfer_to_dac_1;
 static bool buffer_complete;
@@ -82,13 +87,13 @@ void playMusicInit(void) {
 
 
 	transfer_to_dac_1 = true;
-	buffer_complete = false;
+	buffer_complete = true;
 	transfer_to_dac_1_prev = transfer_to_dac_1;
 
 	audio_init(frameInfo.samprate, frame_decode_1, frame_decode_2,
 			frameInfo.outputSamps, &transfer_to_dac_1);
 
-//	vumeterInit(frameInfo.outputSamps, frameInfo.samprate, 80, 15000);
+	vumeterInit(4096, frameInfo.samprate, 80, 15000);
 }
 
 void playMusic(void) {
@@ -98,9 +103,10 @@ void playMusic(void) {
 		if(decoderGetFrame(frame_decode_2, &frameInfo)){
 			buffer_complete = true;
 			for (int i = 0; i < 3000; i++) {
+				frame_deepcopy_2[i] = frame_decode_2[i];
 				frame_decode_2[i] = (frame_decode_2[i]+32768)>>4;
 			}
-			//vumeterTransform(frame_decode_2);
+			vumeterTransform(frame_deepcopy_2);
 		}
 		else{
 			while(1);
@@ -112,9 +118,10 @@ void playMusic(void) {
 		if(decoderGetFrame(frame_decode_1, &frameInfo)){
 			buffer_complete = true;
 			for (int i = 0; i < 3000; i++) {
-				frame_decode_1[i] = (frame_decode_1[i]+32768)>>4;
+				frame_deepcopy_1[i] = frame_decode_1[i];
+		 		frame_decode_1[i] = (frame_decode_1[i]+32768)>>4;
 			}
-			//vumeterTransform(frame_decode_1);
+			vumeterTransform(frame_deepcopy_1);
 		}
 		else{
 			while(1);

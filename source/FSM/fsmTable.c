@@ -9,6 +9,10 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 #include "fsmTable.h"
+#include "./Drivers/HAL/SD/SD.h"
+#include <stdint.h>
+
+
 
 /*******************************************************************************
  * Foward declarations
@@ -33,14 +37,22 @@ extern state_edge_t pausa_play[];
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
+//---------------------------Rutinas globales
 static void do_nothing(void);
+static void move_up_row(void);
+static void move_down_row(void);
+
+//---------------------------Rutinas estado init
+static void estado_init_config_SD(void);
+
+//---------------------------Rutinas sleep
 static void go_sleep(void);
 
 /*******************************************************************************
  * VARIABLES WITH GLOBAL SCOPE
  ******************************************************************************/
 state_edge_t estado_init[] = {
-	{HAY_SD, menu,do_nothing},
+	{HAY_SD, menu, estado_init_config_SD},
 	{TIME_OUT_SD, sleep, go_sleep},
 	{FIN_TABLA, estado_init, do_nothing}
 };
@@ -55,8 +67,8 @@ state_edge_t menu[] = {
 	{POSICION_2, volumen, do_nothing},
 	{POSICION_3, ecualizador, do_nothing},
 	{POSICION_4, pausa_play, do_nothing},
-	{MOV_ABAJO, menu, do_nothing},
-	{MOV_ARRIBA, menu, do_nothing},
+	{MOV_ABAJO, menu, move_down_row},
+	{MOV_ARRIBA, menu, move_up_row},
 	{APAGAR, sleep, do_nothing},
 	{FIN_TABLA, estado_init, do_nothing}
 };
@@ -111,6 +123,7 @@ state_edge_t canciones[] = {
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
+static uint8_t row_index;
 
 /*******************************************************************************
  *******************************************************************************
@@ -124,13 +137,44 @@ state_t FSM_GetInitState(void) {
 
 }
 
-//------------------------------Rutinas
-void do_nothing(void){}
 
-void go_sleep(void){
+/*******************************************************************************
+ *******************************************************************************
+                        		Rutinas
+ *******************************************************************************
+ ******************************************************************************/
+//Rutinas globales entre estados
+static void do_nothing(void){}
+
+static void move_up_row(){
+	row_index++;
+	row_index &= 0b11;
+}
+
+static void move_down_row(){
+	row_index--;
+	row_index &= 0b11;
+}
+
+
+//-----------------------------Rutinas estado_init
+static void estado_init_config_SD(){
+	//Inicializar nueva SD
+	SD_initializationProcess();
+
+	//Leer archivos
+
+
+}
+
+
+//-----------------------------Rutinas sleep
+static void go_sleep(void){
 	//mandar a sleep los modulos
 
 }
+
+//-----------------------------Rutinas menu
 
 
 /*******************************************************************************

@@ -199,11 +199,7 @@ void SD_init(){
 	//SDHC_enableCardDedection();
 	pitInit();
 
-
-	gpioMode( (PORTNUM2PIN(PE,26)) ,OUTPUT);
-
 	cardInfo.cardStatus = SD_NOTINIT;
-
 }
 bool SD_isSDcard(){
 	return SDHC_isCardDetected();

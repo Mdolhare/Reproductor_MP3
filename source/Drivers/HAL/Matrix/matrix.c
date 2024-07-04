@@ -8,7 +8,6 @@
  ******************************************************************************/
 
 #include "matrix.h"
-#include "../../MCAL/Board/board.h"
 #include "../../MCAL/Gpio/gpio.h"
 #include "../../MCAL/PIT/pit.h"
 #include "../../MCAL/PWM/PWM.h"
@@ -69,9 +68,9 @@ void matrixInit()
 	tcd_cfg_t dma_cfg = {(uint32_t)mat, (uint32_t)cnv_ptr, 2, 0,
 					dma16BIT, dma16BIT, 2, (sizeof(mat)/sizeof(mat[0].green[0])), sizeof(mat), 0, 0, 0};
 	dma_config(dma_cfg, &tcd);
-	dma_begin(dmaCHANNEL0,  dmaFTM0_0, false, &tcd);
-	dma_add_irq(dmaCHANNEL0, reset_start, &tcd, false, true);
-	pitSetIRQFunc(PIT_0, reset_stop);
+	dma_begin(dmaCHANNEL2,  dmaFTM0_0, false, &tcd);
+	dma_add_irq(dmaCHANNEL2, reset_start, &tcd, false, true);
+	pitSetIRQFunc(PIT_2, reset_stop);
 }
 
 void turnOffMatrix()
@@ -115,14 +114,14 @@ static void reset_start() {
 
 		FTM_StopClock(FTM0);
 
-		pitSetAndBegin(PIT_0, 55);
+		pitSetAndBegin(PIT_2, 55);
 }
 
 
 
 static void  reset_stop(){
 
-		pitDisable(PIT_0);
+		pitStopTimer(PIT_2);
 
 		FTM0->OUTMASK &= ~FTM_OUTMASK_CH0OM(1);
 

@@ -11,9 +11,7 @@
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
-
-#include "MK64F12.h"
-#include "arm_math.h"
+#include <stdint.h>
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -38,7 +36,7 @@
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
 
-void vumeterInit(uint16_t sampleSize, uint32_t fs, float32_t lowBand,  float32_t highBand);
+void vumeterInit(uint16_t sampleSize, uint32_t fs, float lowBand,  float highBand);
 
 void vumeterTransform(int16_t* data);
 
