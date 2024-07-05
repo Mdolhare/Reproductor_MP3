@@ -365,7 +365,7 @@ static bool SD_operationConditionValidation(){
 		bool initializationComplete = false;
 		uint8_t tries = 10;
 		isTimePassed = false;
-		pitSetIRQFunc(PIT_0, SD_timerPIT);
+	//	pitSetIRQFunc(PIT_3, SD_timerPIT);
 
 		//primer ACMD41 para iniciar proceso de inicializacion (ocr != 0)
 		cmd.cmd_index = 41;
@@ -385,10 +385,12 @@ static bool SD_operationConditionValidation(){
 				}
 				else{
 					//esperar 1 segundo antes de repetir
-					pitSetAndBegin(PIT_0,SD_PIT_TIME_US);
-					while(!isTimePassed);
-					pitStopTimer(PIT_0);
-					isTimePassed = false;
+			//		pitSetAndBegin(PIT_3,SD_PIT_TIME_US);
+				//	while(!isTimePassed);
+				//	pitStopTimer(PIT_3);
+					uint32_t count = 0xFFFFFF;
+					while((count--));
+				//	isTimePassed = false;
 					//reenvio de ACMD41 con argunento 0
 					cmd.cmd_arg = 0;
 				}
@@ -397,7 +399,7 @@ static bool SD_operationConditionValidation(){
 				tries = -1;
 			}
 		}while((!initializationComplete) && (--tries > 0));
-		pitDisableIRQFunc(PIT_0);
+	//	pitDisableIRQFunc(PIT_3);
 
 		if(tries <= 0){
 			validation = false;

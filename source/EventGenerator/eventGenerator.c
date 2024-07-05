@@ -1,19 +1,11 @@
-/*
- * playMusic.c
- *
- *  Created on: Apr 1, 2024
- *      Author: Grupo 2
- */
 
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
-
-#include "playMusic.h"
-#include "../Audio/audio.h"
-#include "../MP3decoder/mp3decoder.h"
-#include "../../helix/pub/mp3dec.h"
-#include "../Vumeter/vumeter.h"
+#include "../Queue/cola.h"
+#include "../Drivers/MCAL/Gpio/gpio.h"
+#include "../FSM/fsmTable.h"
+#include <stdint.h>
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -30,7 +22,8 @@
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
-
+static void new_mov_event(void);
+static void new_enter_event(void);
 
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -40,118 +33,48 @@
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
-
-static int16_t frame_decode_1[4096];
-
-static int16_t frame_deepcopy_1[4096];
-
-static int16_t frame_decode_2[4096];
-
-static int16_t frame_deepcopy_2[4096];
-
-static bool transfer_to_dac_1;
-static bool buffer_complete;
-static bool transfer_to_dac_1_prev;
-
-static MP3FrameInfo frameInfo;
-
+static cola_t event_queue;
+static uint8_t row_index;
 
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
+void EG_init(void){
+	row_index = 0;
+	colaInit(&event_queue);
 
-void playMusicInit(void) {
+	gpioMode(PORTNUM2PIN(PA,4), INPUT);
+	gpioIRQ(PORTNUM2PIN(PA,4),GPIO_IRQ_MODE_FALLING_EDGE, new_mov_event);
 
-	decoderInit();
-
-	//lee para open
-	if(decoderGetFrame(frame_decode_1, &frameInfo)){
-
-	}
-	else {
-		while(1);
-	}
-	//Lee para primer frame, tener datos
-	if(decoderGetFrame(frame_decode_1, &frameInfo)){
-
-	}
-	else{
-		while(1);
-	}
-	uint32_t i = 0;
-	for(i = 0; i < 3000; i++){
-		frame_decode_1[i] = frame_decode_1[i]/4;
-	}
-
-
-	transfer_to_dac_1 = true;
-	buffer_complete = true;
-	transfer_to_dac_1_prev = transfer_to_dac_1;
-
-	audio_init(frameInfo.samprate, frame_decode_1, frame_decode_2,
-			frameInfo.outputSamps, &transfer_to_dac_1);
-
-	vumeterInit(4096, frameInfo.samprate, 80, 15000);
-}
-
-void playMusic(void) {
-
-	if(transfer_to_dac_1 && !buffer_complete)
-	{
-		if(decoderGetFrame(frame_decode_2, &frameInfo)){
-			buffer_complete = true;
-			for (int i = 0; i < 3000; i++) {
-				frame_deepcopy_2[i] = frame_decode_2[i];
-				frame_decode_2[i] = (frame_decode_2[i]+32768)>>4;
-			}
-			vumeterTransform(frame_deepcopy_2);
-		}
-		else{
-			while(1);
-		}
-	}
-
-	else if(!transfer_to_dac_1 && !buffer_complete)
-	{
-		if(decoderGetFrame(frame_decode_1, &frameInfo)){
-			buffer_complete = true;
-			for (int i = 0; i < 3000; i++) {
-				frame_deepcopy_1[i] = frame_decode_1[i];
-		 		frame_decode_1[i] = (frame_decode_1[i]+32768)>>4;
-			}
-			vumeterTransform(frame_deepcopy_1);
-		}
-		else{
-			while(1);
-		}
-	}
-
-	if(transfer_to_dac_1_prev != transfer_to_dac_1)
-	{
-		buffer_complete = false;
-		transfer_to_dac_1_prev = transfer_to_dac_1;
-	}
+	gpioMode(PORTNUM2PIN(PC,6), INPUT);
+	gpioIRQ(PORTNUM2PIN(PC,6),GPIO_IRQ_MODE_FALLING_EDGE, new_enter_event);
 
 }
 
-void playMusicPause(void){
-	static bool isPlaying = false;
-	if(isPlaying){
-		audio_pause();
-		isPlaying = false;
-	}
-	else{
-		audio_resume();
-		isPlaying = true;
-	}
+events_t EG_getEvent(void){
+	return colaPull(&event_queue);
 }
+
+bool EG_isNewEvent(void){
+	return event_queue.count;
+}
+
 
 /*******************************************************************************
  *******************************************************************************
                         LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
+static void new_mov_event(void){
+	row_index++;
+	row_index &= 0b11;
+	colaPush(&event_queue, MOV_ARRIBA);
+}
+
+static void new_enter_event(void){
+	colaPush(&event_queue, row_index);
+}
 
 

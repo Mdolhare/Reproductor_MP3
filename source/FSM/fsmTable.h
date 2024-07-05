@@ -19,21 +19,21 @@
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
-enum eventos{
+typedef enum {
 	POSICION_1,
 	POSICION_2,
 	POSICION_3,
 	POSICION_4,
+	POSICION_5,
 	MOV_ABAJO,
 	MOV_ARRIBA,
-	VOLVER,
 	HAY_SD,
 	TIME_OUT_SD,
 	START,
 	APAGAR,
 	NADA,
-	FIN_TABLA
-};
+	DEFAULT
+}events_t;
 
 typedef	unsigned char byte_t;
 

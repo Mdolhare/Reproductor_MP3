@@ -85,9 +85,6 @@ void audio_pause(){
 }
 
 
-
-
-
 static void flagHandler(void) {
 
 	*flag = !(*flag);

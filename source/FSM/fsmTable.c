@@ -9,7 +9,10 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 #include "fsmTable.h"
-#include "./Drivers/HAL/SD/SD.h"
+#include "../Drivers/HAL/SD/SD.h"
+#include "../PlayMusic/playMusic.h"
+#include "../Drivers/MCAL/Gpio/gpio.h"
+
 #include <stdint.h>
 
 
@@ -28,6 +31,9 @@ extern state_edge_t pausa_play[];
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
+#define LED_R PORTNUM2PIN(PB,22)
+#define LED_B PORTNUM2PIN(PB,21)
+#define LED_G PORTNUM2PIN(PE,26)
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -39,6 +45,10 @@ extern state_edge_t pausa_play[];
  ******************************************************************************/
 //---------------------------Rutinas globales
 static void do_nothing(void);
+static void do_nothing_1(void);
+static void do_nothing_2(void);
+static void do_nothing_3(void);
+
 static void move_up_row(void);
 static void move_down_row(void);
 
@@ -54,29 +64,28 @@ static void go_sleep(void);
 state_edge_t estado_init[] = {
 	{HAY_SD, menu, estado_init_config_SD},
 	{TIME_OUT_SD, sleep, go_sleep},
-	{FIN_TABLA, estado_init, do_nothing}
+	{DEFAULT, estado_init, do_nothing}
 };
 
 state_edge_t sleep[] = {
 	{START, estado_init, do_nothing},
-	{FIN_TABLA, estado_init, do_nothing}
+	{DEFAULT, estado_init, do_nothing}
 };
 
 state_edge_t menu[] = {
-	{POSICION_1, canciones, do_nothing},
-	{POSICION_2, volumen, do_nothing},
-	{POSICION_3, ecualizador, do_nothing},
-	{POSICION_4, pausa_play, do_nothing},
+	{POSICION_1, menu, do_nothing_1},//canciones
+	{POSICION_2, menu, do_nothing_2},//volumne
+	{POSICION_3, menu, do_nothing_3},//ecualizador
+	{POSICION_4, menu, playMusicPause},
 	{MOV_ABAJO, menu, move_down_row},
 	{MOV_ARRIBA, menu, move_up_row},
 	{APAGAR, sleep, do_nothing},
-	{FIN_TABLA, estado_init, do_nothing}
+	{DEFAULT, estado_init, do_nothing}
 };
-
 
 state_edge_t pausa_play[] = {
 	{NADA, menu, do_nothing},
-	{FIN_TABLA, estado_init, do_nothing}
+	{DEFAULT, estado_init, do_nothing}
 };
 
 state_edge_t volumen[] = {
@@ -86,7 +95,7 @@ state_edge_t volumen[] = {
 	{POSICION_4, menu, do_nothing},
 	{MOV_ABAJO, volumen, do_nothing},
 	{MOV_ARRIBA, volumen, do_nothing},
-	{FIN_TABLA, estado_init, do_nothing}
+	{DEFAULT, estado_init, do_nothing}
 
 };
 
@@ -96,10 +105,10 @@ state_edge_t ecualizador[] = {
 	{POSICION_2, ecualizador, do_nothing},
 	{POSICION_3, ecualizador, do_nothing},
 	{POSICION_4, ecualizador, do_nothing},
-	{VOLVER, menu, do_nothing},
+	{POSICION_5, menu, do_nothing},			//volver al menu
 	{MOV_ABAJO, ecualizador, do_nothing},
 	{MOV_ARRIBA, ecualizador, do_nothing},
-	{FIN_TABLA, estado_init, do_nothing}
+	{DEFAULT, estado_init, do_nothing}
 
 
 };
@@ -108,10 +117,10 @@ state_edge_t canciones[] = {
 	{POSICION_1, menu, do_nothing},
 	{POSICION_2, menu, do_nothing},
 	{POSICION_3, menu, do_nothing},
-	{VOLVER, menu, do_nothing},
+	{POSICION_4, menu, do_nothing},			//volver al menu
 	{MOV_ABAJO, canciones, do_nothing},
 	{MOV_ARRIBA, canciones, do_nothing},
-	{FIN_TABLA, estado_init, do_nothing}
+	{DEFAULT, estado_init, do_nothing}
 
 
 };
@@ -133,7 +142,7 @@ static uint8_t row_index;
 
 state_t FSM_GetInitState(void) {
 
- 	return estado_init;
+ 	return menu;
 
 }
 
@@ -145,6 +154,28 @@ state_t FSM_GetInitState(void) {
  ******************************************************************************/
 //Rutinas globales entre estados
 static void do_nothing(void){}
+
+static void do_nothing_1(void){
+	gpioWrite(LED_R, LOW);
+	gpioWrite(LED_B, HIGH);
+	gpioWrite(LED_G, HIGH);
+
+}
+static void do_nothing_2(void){
+	gpioWrite(LED_R, HIGH);
+	gpioWrite(LED_B, LOW);
+	gpioWrite(LED_G, HIGH);
+
+}
+static void do_nothing_3(void){
+	gpioWrite(LED_R, HIGH);
+	gpioWrite(LED_B, HIGH);
+	gpioWrite(LED_G, LOW);
+
+}
+
+
+
 
 static void move_up_row(){
 	row_index++;
@@ -175,6 +206,8 @@ static void go_sleep(void){
 }
 
 //-----------------------------Rutinas menu
+
+
 
 
 /*******************************************************************************

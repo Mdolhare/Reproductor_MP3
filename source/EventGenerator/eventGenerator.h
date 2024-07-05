@@ -1,19 +1,17 @@
 /*
- * playMusic.h
+ * eventGenerator.h
  *
- *  Created on: Apr 1, 2024
- *      Author: Grupo 2
+ *  Created on: 5 jul. 2024
+ *      Author: grupo 2
  */
 
-#ifndef PLAY_MUSIC_H_
-#define PLAY_MUSIC_H_
+#ifndef EVENTGENERATOR_EVENTGENERATOR_H_
+#define EVENTGENERATOR_EVENTGENERATOR_H_
 
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
-
-#include <stdint.h>
-#include <stdbool.h>
+#include "../FSM/fsmTable.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -35,15 +33,14 @@
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
+void EG_init(void);
 
-void playMusicInit(void);
-void playMusic(void);
-void playMusicPause(void);
+events_t EG_getEvent(void);
+
+bool EG_isNewEvent(void);
+
+
 
 /*******************************************************************************
  ******************************************************************************/
-
-
-
-
-#endif /* PLAY_MUSIC_H_ */
+#endif /* EVENTGENERATOR_EVENTGENERATOR_H_ */

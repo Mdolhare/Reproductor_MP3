@@ -24,8 +24,8 @@
 #include "Drivers/MCAL/PIT/pit.h"
 #include "sen.h"
 #include "Vumeter/vumeter.h"
-
-
+#include "FSM/fsm.h"
+#include "FSM/fsmTable.h"
 
 
 //en el concector jack VERDE es GND
@@ -34,7 +34,9 @@
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
+#define LED_R PORTNUM2PIN(PB,22)
 #define LED_B PORTNUM2PIN(PB,21)
+#define LED_G PORTNUM2PIN(PE,26)
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -60,11 +62,15 @@ void playPause(void);
 
 void App_Init (void) {
 
+	gpioMode(LED_R, OUTPUT);
+	gpioMode(LED_B, OUTPUT);
+	gpioMode(LED_G, OUTPUT);
+	gpioWrite(LED_R, HIGH);
+	gpioWrite(LED_B, HIGH);
+	gpioWrite(LED_G, HIGH);
+	//-
 	SD_init();
-//	gpioMode(LED_B, OUTPUT);
-//	gpioWrite(LED_B,1);
-	gpioMode(PORTNUM2PIN(PA,4),INPUT);
-	gpioIRQ(PORTNUM2PIN(PA,4),GPIO_IRQ_MODE_FALLING_EDGE, playPause);
+
 }
 
 void App_Init_2 (void) {
@@ -73,23 +79,19 @@ void App_Init_2 (void) {
 
 }
 
-
-void App_Run_5(){
-	vumeterInit(80, 44100, 80, 15000);
-
-	vumeterTransform(sine_wave);
-
-	while(1);
-}
-
 void App_Run(){
 	bool ok=false;
 	while(1){
 		if(SD_isSDcard()){
 			ok = SD_initializationProcess();
+			SD_cardStatus a;
 			if(ok){
 				//se inicializo bien la tarjeta
 				break;
+			}
+			else{
+
+				a = SD_getStatus();
 			}
 			while(1);
 		}
@@ -97,13 +99,31 @@ void App_Run(){
 				//
 		}
 	}
+	EG_init();
+	playMusicInit();//despues de haber SD hago init playMusic, no antes
 
-	playMusicInit();
+	state_t state = FSM_GetInitState();
+	uint8_t ev=0;
+	while(1){
 
-	while(1)
+		if(EG_isNewEvent()){
+			ev = EG_getEvent();
+			fsm(state,ev);
+		}
+
 		playMusic();
+	}
+
 }
 
+
+
+void App_Run_5(){
+	vumeterInit(80, 44100, 80, 15000);
+	vumeterTransform(sine_wave);
+
+	while(1);
+}
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run_1(void) {
@@ -223,14 +243,4 @@ void pitFunc(void)
 	int i;
 }
 
-void playPause(void){
-	static bool isPlaying = false;
-	if(isPlaying){
-		audio_pause();
-		isPlaying = false;
-	}
-	else{
-		audio_resume();
-		isPlaying = true;
-	}
-}
+
