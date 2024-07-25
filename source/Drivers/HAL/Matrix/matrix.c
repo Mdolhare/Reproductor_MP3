@@ -22,6 +22,8 @@
 #define COLOR_BITS 8
 #define ALL_BITS COLOR_BITS*PIXEL_AMOUNT*3
 #define BIT_MENOS_SIGNIFICATIVO 0b00000001
+
+//Matrix Data PTC1
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/

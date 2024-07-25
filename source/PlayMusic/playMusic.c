@@ -15,6 +15,12 @@
 #include "../../helix/pub/mp3dec.h"
 #include "../Vumeter/vumeter.h"
 
+//debug
+#include "../Drivers/MCAL/GPIO/Gpio.h"
+#define LED_R PORTNUM2PIN(PB,22)
+#define LED_B PORTNUM2PIN(PB,21)
+#define LED_G PORTNUM2PIN(PE,26)
+
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
@@ -137,6 +143,11 @@ void playMusic(void) {
 }
 
 void playMusicPause(void){
+	//debug
+	gpioWrite(LED_R, LOW);
+	gpioWrite(LED_B, LOW);
+	gpioWrite(LED_G, LOW);
+
 	static bool isPlaying = false;
 	if(isPlaying){
 		audio_pause();
