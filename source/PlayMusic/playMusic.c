@@ -14,9 +14,10 @@
 #include "../MP3decoder/mp3decoder.h"
 #include "../../helix/pub/mp3dec.h"
 #include "../Vumeter/vumeter.h"
+#include "../Equalizer/equalizer.h"
 
 //debug
-#include "../Drivers/MCAL/GPIO/Gpio.h"
+#include "../Drivers/MCAL/Gpio/gpio.h"
 #define LED_R PORTNUM2PIN(PB,22)
 #define LED_B PORTNUM2PIN(PB,21)
 #define LED_G PORTNUM2PIN(PE,26)
@@ -24,6 +25,8 @@
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
+
+#define ARR_LEN 4096
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -37,6 +40,8 @@
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
 
+static void from_16bit_to_32bit(int16_t* input, int32_t* output, int32_t len);
+static void from_32bit_to_16bit(int32_t* input, int16_t* output, int32_t len);
 
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -47,19 +52,24 @@
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
 
-static int16_t frame_decode_1[4096];
+static int16_t frame_decode_1[ARR_LEN];
 
-static int16_t frame_deepcopy_1[4096];
+static int16_t frame_deepcopy_1[ARR_LEN];
 
-static int16_t frame_decode_2[4096];
+static int32_t frame_long_1[ARR_LEN];
 
-static int16_t frame_deepcopy_2[4096];
+static int16_t frame_decode_2[ARR_LEN];
+
+static int16_t frame_deepcopy_2[ARR_LEN];
+
+static int32_t frame_long_2[ARR_LEN];
 
 static bool transfer_to_dac_1;
 static bool buffer_complete;
 static bool transfer_to_dac_1_prev;
 
 static MP3FrameInfo frameInfo;
+
 
 
 /*******************************************************************************
@@ -100,6 +110,10 @@ void playMusicInit(void) {
 			frameInfo.outputSamps, &transfer_to_dac_1);
 
 	vumeterInit(4096, frameInfo.samprate, 80, 15000);
+
+	int8_t gainDB[8] = {0,0,0,0,0,0,0,0};
+
+	equalizerInit(gainDB);
 }
 
 void playMusic(void) {
@@ -108,11 +122,17 @@ void playMusic(void) {
 	{
 		if(decoderGetFrame(frame_decode_2, &frameInfo)){
 			buffer_complete = true;
+
+			from_16bit_to_32bit(frame_decode_2, frame_long_2, ARR_LEN);
+			equalizerFilter(frame_decode_2, frame_decode_2, frameInfo.outputSamps);
+			from_32bit_to_16bit(frame_long_2, frame_decode_2, ARR_LEN);
+			/*
 			for (int i = 0; i < 3000; i++) {
 				frame_deepcopy_2[i] = frame_decode_2[i];
 				frame_decode_2[i] = (frame_decode_2[i]+32768)>>4;
 			}
 			vumeterTransform(frame_deepcopy_2);
+			*/
 		}
 		else{
 			while(1);
@@ -123,11 +143,17 @@ void playMusic(void) {
 	{
 		if(decoderGetFrame(frame_decode_1, &frameInfo)){
 			buffer_complete = true;
+
+			from_16bit_to_32bit(frame_decode_1, frame_long_1, ARR_LEN);
+			equalizerFilter(frame_decode_1, frame_decode_1, frameInfo.outputSamps);
+			from_32bit_to_16bit(frame_long_1, frame_decode_1, ARR_LEN);
+			/*
 			for (int i = 0; i < 3000; i++) {
 				frame_deepcopy_1[i] = frame_decode_1[i];
 		 		frame_decode_1[i] = (frame_decode_1[i]+32768)>>4;
 			}
 			vumeterTransform(frame_deepcopy_1);
+			*/
 		}
 		else{
 			while(1);
@@ -164,5 +190,23 @@ void playMusicPause(void){
                         LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
+
+
+static void from_16bit_to_32bit(int16_t* input, int32_t* output, int32_t len) {
+	for (int i=0; i<len; i++) {
+		output[i] = ((int32_t)input[i]);
+	}
+}
+
+
+static void from_32bit_to_16bit(int32_t* input, int16_t* output, int32_t len) {
+	for (int i=0; i<len; i++) {
+		output[i] = (int16_t)input[i];
+	}
+}
+
+
+
+
 
 
