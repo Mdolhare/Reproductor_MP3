@@ -1,10 +1,11 @@
 /***************************************************************************//**
-  @file     SDHC.h
-  @brief    Driver MCAL para SDHC
-  @author   Grupo 2
+  @file     encoder_app.h
+  @brief    Encoder analysis app
+  @author   
  ******************************************************************************/
-#ifndef SD_H_
-#define SD_H_
+
+#ifndef _ENCODER_APP_H_
+#define _ENCODER_APP_H_
 
 /*******************************************************************************
  * INCLUDE HEADER FILES
@@ -16,36 +17,17 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
-
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
-typedef enum {
-	SD_INIT = 0,
-	SD_NOTINIT,
-	SD_OK,
-	SD_ERROR,
-	SD_ERROR_TI,
-	SD_ERROR_OP,
-	SD_RDY,
-	SD_NOTRDY,
-} SD_cardStatus;
-
-
+ enum status{KEEP_WRITING, DONE_WRITING, MISTAKE_WRITING, RELOAD_WRITING};
+/*******************************************************************************
+ * VARIABLE PROTOTYPES WITH GLOBAL SCOPE
+ ******************************************************************************/
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
-void SD_init();
+int encoder_num (int press_button, int* reg);
 
-void SD_reset();
-
-bool SD_initializationProcess();
-
-SD_cardStatus SD_getStatus();
-
-bool SD_isSDcard();
-
-bool SD_readSectors(uint32_t address, uint32_t numSector, uint32_t * data);
-
-#endif /* SD_H_ */
+#endif // _ENCODER_APP_H_

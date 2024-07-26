@@ -1,20 +1,17 @@
-/*#include "SysTick.h"
-#include "gpio.h"
+#include "SysTick.h"
 static pinIrqFun_t callbacks[MAX_FUNCTIONS];
 static bool called = false;
 static uint32_t idx = 0;
 
-/*__ISR__ SysTick_Handler(void) {
-	gpioWrite(PORTNUM2PIN(PB,9),LOW);
+__ISR__ SysTick_Handler(void) {
 
 	for(int i = 0; i<idx; i++)
 		(callbacks[i])();
 
-	gpioWrite(PORTNUM2PIN(PB,9),HIGH);
 
-}*/
+}
 
-/*
+
 bool SysTick_Init (void) {
 	if (!called) {
 		SysTick->CTRL = 0x0;
@@ -34,4 +31,4 @@ bool SysTick_Add(pinIrqFun_t funcallback) {
 	return check;
 }
 
-*/
+
