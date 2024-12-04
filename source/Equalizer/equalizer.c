@@ -134,3 +134,10 @@ void equalizerFilter(int32_t* inputBuffer, int32_t* outputBuffer, int32_t len) {
  ******************************************************************************/
 
 
+void transfer_to_block(int32_t* Buffer, int32_t* Block, int32_t blockSize) {
+
+	for (int i; i<blockSize; i++) {
+		
+	}
+
+}
