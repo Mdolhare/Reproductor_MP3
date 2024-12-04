@@ -76,6 +76,8 @@ void LCD_Init(uint8_t _address, uint8_t _columns, uint8_t _rows) {
 	cfg.mode = TX;
 	cfg.cant_bytes_tx = 1;
 
+	output.Led = 1;
+
 	pitInit();
 
 }
@@ -84,12 +86,14 @@ void LCD_Init(uint8_t _address, uint8_t _columns, uint8_t _rows) {
 void LCD_begin(void) {
     i2cInit(I2C_0);
 
+    delayMicroseconds(1000*15);//15ms
+
     // Clear i2c adapter
     I2C_Write(0b00000000);
 
     // Wait more than 40 ms after powerOn
 
-    delayMicroseconds(50000);
+    delayMicroseconds(100000);
     Inicialize_LCD();
 
 }
@@ -120,7 +124,7 @@ void LCD_clear(void) {
     output.rw = 0;
 
     LCD_Write(HD44780_CLEAR_DISPLAY, true);
-    delayMicroseconds(1550);
+    delayMicroseconds(15500);
 
 }
 
@@ -131,7 +135,7 @@ void LCD_home(void) {
     output.rw = 0;
 
     LCD_Write(HD44780_CURSOR_HOME, true);
-    delayMicroseconds(1550);
+    delayMicroseconds(15500*2);  //era 1550
 
 }
 
@@ -209,7 +213,7 @@ void LCD_displayOff(void) {
     displayState &= ~(1 << 2);
 
     LCD_Write(HD44780_DISPLAY_CONTROL | displayState, true);
-    delayMicroseconds(37);
+    delayMicroseconds(370);
 
 }
 
@@ -222,7 +226,7 @@ void LCD_cursor(void) {
     displayState |= (1 << 1);
 
     LCD_Write(HD44780_DISPLAY_CONTROL | displayState, true);
-    delayMicroseconds(37);
+    delayMicroseconds(370); //era 37
 
 }
 
@@ -330,7 +334,7 @@ uint8_t write(uint8_t character) {
     output.rw = 0;
 
     LCD_Write(character, true);
-    delayMicroseconds(1000);//este era 41
+    delayMicroseconds(10000);//este era 41
 
     return 1;
 
@@ -385,27 +389,27 @@ static void Inicialize_LCD(void) {
     LCD_Write(0b00110000, true);
     delayMicroseconds(4200);
 
-/*
+
     // second
     LCD_Write(0b00110000, true);
-    delayMicroseconds(150);
+    delayMicroseconds(370);
     // third
     LCD_Write(0b00110000, true);
-    delayMicroseconds(37);
+    delayMicroseconds(370);
 
     // Function Set - 4 bits mode
     LCD_Write(0b00100000, true);
-    delayMicroseconds(37);
+    delayMicroseconds(370);
     // Function Set  - 4 bit Interface, 1 = 2 lines, 0 = 5x8 font
     LCD_Write(0b00101000, true);
-    delayMicroseconds(37);
+    delayMicroseconds(370);
 
 
     LCD_displayOff();
     LCD_clear();
     LCD_leftToRight();
 
-*/
+
 }
 
 
@@ -435,7 +439,7 @@ static void LCD_Write(uint8_t _output, bool initialization) {
 
     output.E = false;
     I2C_Write(GetHighData(output));
-
+    delayMicroseconds(1000);
     // During initialization we only send half a byte
     if (!initialization) {
         // I think we need a delay between half byte writes, but no sure how long it needs to be.
@@ -448,6 +452,8 @@ static void LCD_Write(uint8_t _output, bool initialization) {
 
         output.E = false;
         I2C_Write(GetLowData(output));
+        //delayMicroseconds(1000);
+
     }
 
 }

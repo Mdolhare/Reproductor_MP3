@@ -92,7 +92,7 @@ void App_Init (void) {
 }
 void App_Init_1 (void) {
 
-    LCD_Init(0x27, 20, 4);
+    LCD_Init(0x27, 16, 2);
     //i2cInit(I2C_0);
 
     gpioMode(PORTNUM2PIN(PA,4), INPUT);
@@ -115,8 +115,16 @@ void callback(void) {
 }
 
 void App_Run_7 (void) {
-
+static int i = 0;
 	if(flag_v1){
+		if( i == 0)
+		{
+			LCD_begin();
+			LCD_display();
+			LCD_backlight();
+
+			i++;
+		}
 		/*
 		delayMicroseconds(1000);
 		static uint8_t i = 0;
@@ -126,17 +134,21 @@ void App_Run_7 (void) {
 		cfg.data[0] = i;
 		delayMicroseconds(1000);
 		i2cInit_master(I2C_0, &cfg, 0, 0x30);
-		i++;
+		i++2
 		*/
 
-		LCD_begin();
-	    LCD_display();
-	    //LCD_backlightOff();
-	    //LCD_setCursor(0,0);
-	    //write('A');
-		flag_v1 = false;
-	}
 
+
+
+		LCD_clear();
+	    LCD_setCursor(1,1);
+	    //LCD_clear();
+	    //LCD_home();
+	    LCD_cursor();
+	    write('A');
+		flag_v1 = false;
+
+	}
 
 
 }
