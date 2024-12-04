@@ -169,6 +169,8 @@ static void do_nothing_SIN_SD(void){
 	SD_reset();
 	//mostrar que se inserte SD
 
+	//Parar DAC
+	audio_pause();
 }
 
 static void do_nothing_1(void){
@@ -208,14 +210,17 @@ static void move_down_row(){
 static void estado_init_config_SD(){
 	//Inicializar nueva SD
 
-	bool ok = SD_initializationProcess();
-	SD_cardStatus a;
-	if(!ok){
-		a = SD_getStatus();
-		//tratar error
-		while(1);
-	}
+	SD_cardStatus SDstatus;
 
+	if(SDstatus != SD_OK && SDstatus != SD_RDY){
+		bool ok = SD_initializationProcess();
+		if(!ok){
+			SDstatus = SD_getStatus();
+			//tratar error
+			while(1);
+		}
+		playMusicInit();
+	}
 }
 
 

@@ -8,6 +8,7 @@
  ******************************************************************************/
 
 #include "gpio.h"
+#include "../Port/port.h"
 #include "../SDK/CMSIS/MK64F12.h"
 
 /*******************************************************************************
@@ -27,25 +28,6 @@
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
-typedef struct {
-
-    uint32_t PS : 1;
-    uint32_t PE : 1;
-    uint32_t SRE : 1;
-    uint32_t RESERVED_0 : 1;
-    uint32_t PFE : 1;
-    uint32_t ODE : 1;
-    uint32_t DSE : 1;
-    uint32_t RESERVED_1 : 1;
-    uint32_t MUX : 3;
-    uint32_t RESERVED_2 : 4;
-    uint32_t LK : 1;
-    uint32_t IRQC : 4;
-    uint32_t RESERVED_3 : 4;
-    uint32_t ISF : 1;
-    uint32_t RESERVED_4 : 7;
-
-} PCR_Type;
 
 
 /*******************************************************************************
@@ -62,9 +44,9 @@ static void port_IQR_handler(uint32_t port);
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
-static PORT_Type * const port_base[CANT_PORTS] = PORT_BASE_PTRS;
+//static PORT_Type * const port_base[CANT_PORTS] = PORT_BASE_PTRS;
 static GPIO_Type * const gpio_base[CANT_PORTS] = GPIO_BASE_PTRS;
-static uint32_t const ports_irqs[CANT_PORTS] = PORT_IRQS;
+//static uint32_t const ports_irqs[CANT_PORTS] = PORT_IRQS;
 
 
 /*******************************************************************************
@@ -143,7 +125,9 @@ bool gpioIRQ (pin_t pin, uint8_t irqMode, pinIrqFun_t irqFun){
 
 	PCR_Type* ptr_pcr;
 
-	    //configuracion PCR
+
+
+	//configuracion PCR
 	ptr_pcr = (PCR_Type*)(&(ptr_port->PCR[PIN2NUM(pin)]));
 	ptr_pcr->IRQC = irqMode;
 	ptr_pcr->ISF = 0;
@@ -151,8 +135,14 @@ bool gpioIRQ (pin_t pin, uint8_t irqMode, pinIrqFun_t irqFun){
 	NVIC_EnableIRQ(ports_irqs[PIN2PORT(pin)]);
 
 	return true;
-
 }
+
+bool gpioDisableIRQ (pin_t pin){
+   //configuracion PCR
+	*PCR_ADRESS(pin) &= (~PORT_PCR_IRQC_MASK);
+	return true;
+}
+
 
 void gpioFILT(pin_t pin, uint8_t ciclos)
 {

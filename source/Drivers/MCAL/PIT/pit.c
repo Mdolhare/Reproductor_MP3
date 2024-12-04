@@ -33,7 +33,7 @@ void pitInit(void) {
     //PIT->CHANNEL[0].TCTRL |= PIT_TCTRL_TIE_MASK;
     //PIT->CHANNEL[0].TCTRL |= PIT_TCTRL_TEN_MASK;
 
-    //NVIC_SetPriority(PIT0_IRQn, 0);
+    NVIC_SetPriority(PIT0_IRQn, 0);
     //NVIC_SetPriority(PIT1_IRQn, 1);
 
 

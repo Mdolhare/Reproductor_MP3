@@ -17,7 +17,7 @@ static bool* flag;
 static void flagHandler(void);
 
 void audio_init(uint32_t _fs, uint16_t* source, uint16_t* source2, uint32_t frameSize, bool* _flag) {
-	//pitInit();
+	pitInit();
 	flag = _flag;
 
 	DAC_Init(true);

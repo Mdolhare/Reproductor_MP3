@@ -126,13 +126,13 @@ void playMusic(void) {
 			from_16bit_to_32bit(frame_decode_2, frame_long_2, ARR_LEN);
 			equalizerFilter(frame_decode_2, frame_decode_2, frameInfo.outputSamps);
 			from_32bit_to_16bit(frame_long_2, frame_decode_2, ARR_LEN);
-			/*
+
 			for (int i = 0; i < 3000; i++) {
-				frame_deepcopy_2[i] = frame_decode_2[i];
+//				frame_deepcopy_2[i] = frame_decode_2[i];
 				frame_decode_2[i] = (frame_decode_2[i]+32768)>>4;
 			}
-			vumeterTransform(frame_deepcopy_2);
-			*/
+			//vumeterTransform(frame_deepcopy_2);
+
 		}
 		else{
 			while(1);
@@ -147,13 +147,14 @@ void playMusic(void) {
 			from_16bit_to_32bit(frame_decode_1, frame_long_1, ARR_LEN);
 			equalizerFilter(frame_decode_1, frame_decode_1, frameInfo.outputSamps);
 			from_32bit_to_16bit(frame_long_1, frame_decode_1, ARR_LEN);
-			/*
+
+
 			for (int i = 0; i < 3000; i++) {
-				frame_deepcopy_1[i] = frame_decode_1[i];
+			//	frame_deepcopy_1[i] = frame_decode_1[i];
 		 		frame_decode_1[i] = (frame_decode_1[i]+32768)>>4;
 			}
-			vumeterTransform(frame_deepcopy_1);
-			*/
+		//	vumeterTransform(frame_deepcopy_1);
+
 		}
 		else{
 			while(1);

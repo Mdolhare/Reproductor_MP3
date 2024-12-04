@@ -20,7 +20,7 @@
  ******************************************************************************/
 
 #define NUMSTAGES 2
-#define BLOCKSIZE 256
+#define BLOCKSIZE 16
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -105,9 +105,9 @@ void equalizerFilter(int32_t* inputBuffer, int32_t* outputBuffer, int32_t len) {
 
 	for (int i=0; i<(len); i+=BLOCKSIZE) {
 
-		//arm_q15_to_q31(inputBuffer + i, inputBlock, BLOCKSIZE);
+	//	arm_q15_to_q31(inputBuffer + i, inputBlock, BLOCKSIZE);
 
-		arm_scale_q31(inputBlock, 0x7FFFFFFF, -3, inputBlock, BLOCKSIZE);
+		arm_scale_q31(inputBuffer + i, 0x7FFFFFFF, -3, inputBlock, BLOCKSIZE);
 
 		arm_biquad_cas_df1_32x64_q31(&S1, inputBlock, outputBlock, BLOCKSIZE);
 		arm_biquad_cas_df1_32x64_q31(&S2, outputBlock, outputBlock, BLOCKSIZE);
@@ -118,9 +118,9 @@ void equalizerFilter(int32_t* inputBuffer, int32_t* outputBuffer, int32_t len) {
 		arm_biquad_cascade_df1_fast_q31(&S7, outputBlock, outputBlock, BLOCKSIZE);
 		arm_biquad_cascade_df1_fast_q31(&S8, outputBlock, outputBlock, BLOCKSIZE);
 
-		//arm_q31_to_q15(outputBlock, outputBuffer + i, BLOCKSIZE);
+	//	arm_q31_to_q15(outputBlock, outputBuffer + i, BLOCKSIZE);
 
-		 //arm_scale_f32(outputF32 + (i * BLOCKSIZE), 8.0f, outputF32 + (i * BLOCKSIZE), BLOCKSIZE);
+		arm_scale_q31(outputBlock, 0x7FFFFFFF, 1, outputBuffer + i, BLOCKSIZE);
 	}
 
 

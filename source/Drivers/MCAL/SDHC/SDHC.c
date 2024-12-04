@@ -293,6 +293,7 @@ static bool SDHC_checkErrInCMD(bool useDatLine){
 
 		}
 	}
+	status.err = NO_ERR;
 	return true;
 }
 
