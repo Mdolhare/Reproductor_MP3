@@ -13,6 +13,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 
 
@@ -27,7 +28,7 @@
 #include "FSM/fsm.h"
 #include "FSM/fsmTable.h"
 #include "Drivers/MCAL/I2C/i2c.h"
-#include "Drivers/HAL/display/display.h"
+#include "Drivers/HAL/display/displayLCD.h"
 
 
 //en el concector jack VERDE es GND
@@ -57,6 +58,16 @@ FILINFO fno;    /* File information */
  ******************************************************************************/
 static i2c_cfg_t cfg;
 static bool flag_v1 = false;
+static char lcd_chars[] =
+" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+static const char line1[] = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFG"; //HIJKLMN
+static const char line2[] = "OPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxy"; //z{|}~
+static const char line11[] = " !\"#$%&'()*+,-."; ///0123456789:;<=>?@ABCDEFGHIJKLMN
+
+
+//strncpy(line1, lcd_chars, 40);         // Copiar los primeros 40 caracteres
+//strncpy(line2, lcd_chars + 40, 40);   // Copiar los siguientes 40 caracteres
+
 void callback();
 
 /*******************************************************************************
@@ -91,18 +102,11 @@ void App_Init (void) {
 
 }
 void App_Init_1 (void) {
-
-    LCD_Init(0x27, 16, 2);
-    //i2cInit(I2C_0);
+	displayLCD_Init();
 
     gpioMode(PORTNUM2PIN(PA,4), INPUT);
     gpioIRQ(PORTNUM2PIN(PA,4),GPIO_IRQ_MODE_FALLING_EDGE, callback);
 
-    cfg.address = 0x27;
-    cfg.mode = TX;
-    cfg.cant_bytes_tx = 1;
-    cfg.data[0] = 0x12;
-    i2cInit(I2C_0);
 
 }
 
@@ -117,37 +121,23 @@ void callback(void) {
 void App_Run_7 (void) {
 static int i = 0;
 	if(flag_v1){
-		if( i == 0)
-		{
-			LCD_begin();
-			LCD_display();
-			LCD_backlight();
-
+		if( i == 0){
+			displayLCD_Begin();
 			i++;
 		}
-		/*
-		delayMicroseconds(1000);
-		static uint8_t i = 0;
-		cfg.data[0] = i;
-		i2cInit_master(I2C_0, &cfg, 0, 0x30);
-		i++;
-		cfg.data[0] = i;
-		delayMicroseconds(1000);
-		i2cInit_master(I2C_0, &cfg, 0, 0x30);
-		i++2
-		*/
 
+		if(i<11){
+			i++;
+			displayLCD_ShowCharAt('0'+i,15,1);
+		}
+		else{
+			displayLCD_ShowStringLine1("Hello Word");
 
-
-
-		LCD_clear();
-	    LCD_setCursor(1,1);
-	    //LCD_clear();
-	    //LCD_home();
-	    LCD_cursor();
-	    write('A');
+			i=1;
+		}
+		//DISP_SetCursor(9,1);
+		//DISP_WriteChar(line1[i]);
 		flag_v1 = false;
-
 	}
 
 
