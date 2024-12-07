@@ -201,11 +201,6 @@ void SD_init(){
 
 	cardInfo.cardStatus = SD_NOTINIT;
 }
-
-void SD_reset(){
-	cardInfo.cardStatus = SD_NOTINIT;
-}
-
 bool SD_isSDcard(){
 	return SDHC_isCardDetected();
 }
@@ -237,11 +232,11 @@ bool SD_initializationProcess(){
 			cardInfo.cardStatus = success ? SD_RDY : SD_NOTRDY;
 		}
 		else{
-			cardInfo.cardStatus = SD_ERROR_OP;
+			cardInfo.cardStatus = SD_ERROR;
 		}
 	}
 	else{
-		cardInfo.cardStatus = SD_ERROR_TI;
+		cardInfo.cardStatus = SD_ERROR;
 	}
 
 	return success;

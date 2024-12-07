@@ -25,8 +25,6 @@ typedef enum {
 	SD_NOTINIT,
 	SD_OK,
 	SD_ERROR,
-	SD_ERROR_TI,
-	SD_ERROR_OP,
 	SD_RDY,
 	SD_NOTRDY,
 } SD_cardStatus;
@@ -37,8 +35,6 @@ typedef enum {
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
 void SD_init();
-
-void SD_reset();
 
 bool SD_initializationProcess();
 

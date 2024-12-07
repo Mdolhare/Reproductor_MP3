@@ -10,8 +10,8 @@
  ******************************************************************************/
 
 #include "display.h"
-#include "../i2c.h"
-#include "../pit.h"
+#include "../../MCAL/I2C/i2c.h"
+#include "../../MCAL/PIT/pit.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -74,7 +74,7 @@ void LCD_Init(uint8_t _address, uint8_t _columns, uint8_t _rows) {
 
 	cfg.address = _address;
 	cfg.mode = TX;
-	cfg.cant_bytes_tx = 2;
+	cfg.cant_bytes_tx = 1;
 
 	pitInit();
 
@@ -407,9 +407,11 @@ static void Inicialize_LCD(void) {
 static void I2C_Write(uint8_t output) {
 
 	cfg.data[0] = output;
-	cfg.data[1] = 0xAA;
-
+	//cfg.data[1] = 0xAA;
+	//cfg.data[2] = 0xBB;
 	i2cInit_master(I2C_0, &cfg, 0, 0x30);
+
+	while(I2CisBusy(I2C_0));
 
 }
 
@@ -448,7 +450,7 @@ void delayMicroseconds(uint32_t time) {
 	while(!timer);
 	t_flag = false;
 	pitDisableIRQFunc(PIT_3);
-	pitDisable(PIT_3);
+	pitStopTimer(PIT_3);
 }
 
 static void timer(void) {

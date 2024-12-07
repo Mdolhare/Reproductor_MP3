@@ -48,7 +48,6 @@ static void do_nothing(void);
 static void do_nothing_1(void);
 static void do_nothing_2(void);
 static void do_nothing_3(void);
-static void do_nothing_SIN_SD(void);
 
 static void move_up_row(void);
 static void move_down_row(void);
@@ -63,14 +62,7 @@ static void go_sleep(void);
  * VARIABLES WITH GLOBAL SCOPE
  ******************************************************************************/
 state_edge_t estado_init[] = {
-	{POSICION_1, estado_init, do_nothing},
-	{POSICION_2, estado_init, do_nothing},
-	{POSICION_3, estado_init, do_nothing},
-	{POSICION_4, estado_init, do_nothing},
-	{MOV_ABAJO, estado_init, do_nothing},
-	{MOV_ARRIBA, estado_init, do_nothing},
 	{HAY_SD, menu, estado_init_config_SD},
-	{NO_HAY_SD, estado_init, do_nothing_SIN_SD},
 	{TIME_OUT_SD, sleep, go_sleep},
 	{DEFAULT, estado_init, do_nothing}
 };
@@ -88,7 +80,6 @@ state_edge_t menu[] = {
 	{MOV_ABAJO, menu, move_down_row},
 	{MOV_ARRIBA, menu, move_up_row},
 	{APAGAR, sleep, do_nothing},
-	{NO_HAY_SD, estado_init, do_nothing_SIN_SD},
 	{DEFAULT, estado_init, do_nothing}
 };
 
@@ -104,7 +95,6 @@ state_edge_t volumen[] = {
 	{POSICION_4, menu, do_nothing},
 	{MOV_ABAJO, volumen, do_nothing},
 	{MOV_ARRIBA, volumen, do_nothing},
-	{NO_HAY_SD, estado_init, do_nothing_SIN_SD},
 	{DEFAULT, estado_init, do_nothing}
 
 };
@@ -114,10 +104,10 @@ state_edge_t ecualizador[] = {
 	{POSICION_1, ecualizador, do_nothing},
 	{POSICION_2, ecualizador, do_nothing},
 	{POSICION_3, ecualizador, do_nothing},
-	{POSICION_4, menu, do_nothing},
+	{POSICION_4, ecualizador, do_nothing},
+	{POSICION_5, menu, do_nothing},			//volver al menu
 	{MOV_ABAJO, ecualizador, do_nothing},
 	{MOV_ARRIBA, ecualizador, do_nothing},
-	{NO_HAY_SD, estado_init, do_nothing_SIN_SD},
 	{DEFAULT, estado_init, do_nothing}
 
 
@@ -130,7 +120,6 @@ state_edge_t canciones[] = {
 	{POSICION_4, menu, do_nothing},			//volver al menu
 	{MOV_ABAJO, canciones, do_nothing},
 	{MOV_ARRIBA, canciones, do_nothing},
-	{NO_HAY_SD, estado_init, do_nothing_SIN_SD},
 	{DEFAULT, estado_init, do_nothing}
 
 
@@ -152,7 +141,9 @@ static uint8_t row_index;
  ******************************************************************************/
 
 state_t FSM_GetInitState(void) {
- 	return estado_init;
+
+ 	return menu;
+
 }
 
 
@@ -163,13 +154,6 @@ state_t FSM_GetInitState(void) {
  ******************************************************************************/
 //Rutinas globales entre estados
 static void do_nothing(void){}
-
-static void do_nothing_SIN_SD(void){
-	//reset driver SD
-	SD_reset();
-	//mostrar que se inserte SD
-
-}
 
 static void do_nothing_1(void){
 	gpioWrite(LED_R, LOW);
@@ -207,14 +191,10 @@ static void move_down_row(){
 //-----------------------------Rutinas estado_init
 static void estado_init_config_SD(){
 	//Inicializar nueva SD
+	SD_initializationProcess();
 
-	bool ok = SD_initializationProcess();
-	SD_cardStatus a;
-	if(!ok){
-		a = SD_getStatus();
-		//tratar error
-		while(1);
-	}
+	//Leer archivos
+
 
 }
 

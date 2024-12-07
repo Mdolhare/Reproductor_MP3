@@ -21,7 +21,6 @@
 #define SDHC_WML_MAX_WORD		(128)
 #define SDHC_WML_BURST_MAX		(31)
 #define SDHC_WML_BURST_DEFAULT	(8)
-#define SDHC_SW_DETECT 	(PORTNUM2PIN(PE,6))		//PTE6
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS

@@ -37,7 +37,7 @@
 
 void equalizerInit(int8_t* gainDB);
 
-void equalizerFilter(int32_t* inputBuffer, int32_t* outputBuffer, int32_t len);
+void equalizerFilter(int16_t* inputBuffer, int16_t* outputBuffer, int32_t len);
 
 
 /*******************************************************************************

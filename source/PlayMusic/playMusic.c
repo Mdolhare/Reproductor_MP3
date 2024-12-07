@@ -42,6 +42,8 @@
 
 static void from_16bit_to_32bit(int16_t* input, int32_t* output, int32_t len);
 static void from_32bit_to_16bit(int32_t* input, int16_t* output, int32_t len);
+static void from_16bit_to_f32(int16_t* input, float* output, int32_t len);
+static void from_f32_to_16bit(float* input, int16_t* output, int32_t len);
 
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -56,13 +58,13 @@ static int16_t frame_decode_1[ARR_LEN];
 
 static int16_t frame_deepcopy_1[ARR_LEN];
 
-static int32_t frame_long_1[ARR_LEN];
+static float frame_long_1[ARR_LEN];
 
 static int16_t frame_decode_2[ARR_LEN];
 
 static int16_t frame_deepcopy_2[ARR_LEN];
 
-static int32_t frame_long_2[ARR_LEN];
+static float frame_long_2[ARR_LEN];
 
 static bool transfer_to_dac_1;
 static bool buffer_complete;
@@ -123,16 +125,17 @@ void playMusic(void) {
 		if(decoderGetFrame(frame_decode_2, &frameInfo)){
 			buffer_complete = true;
 
-			from_16bit_to_32bit(frame_decode_2, frame_long_2, ARR_LEN);
-			equalizerFilter(frame_decode_2, frame_decode_2, frameInfo.outputSamps);
-			from_32bit_to_16bit(frame_long_2, frame_decode_2, ARR_LEN);
-			/*
+			//from_16bit_to_f32(frame_decode_2, frame_long_2, ARR_LEN);
+			equalizerFilter(frame_decode_2, frame_decode_2, (frameInfo.outputSamps));
+			//from_f32_to_16bit(frame_long_2, frame_decode_2, ARR_LEN);
+
 			for (int i = 0; i < 3000; i++) {
-				frame_deepcopy_2[i] = frame_decode_2[i];
+				 //frame_decode_2[i] = (int16_t)frame_long_2[i];
+				//frame_deepcopy_2[i] = frame_decode_2[i];
 				frame_decode_2[i] = (frame_decode_2[i]+32768)>>4;
 			}
-			vumeterTransform(frame_deepcopy_2);
-			*/
+			//vumeterTransform(frame_deepcopy_2);
+
 		}
 		else{
 			while(1);
@@ -144,16 +147,17 @@ void playMusic(void) {
 		if(decoderGetFrame(frame_decode_1, &frameInfo)){
 			buffer_complete = true;
 
-			from_16bit_to_32bit(frame_decode_1, frame_long_1, ARR_LEN);
-			equalizerFilter(frame_decode_1, frame_decode_1, frameInfo.outputSamps);
-			from_32bit_to_16bit(frame_long_1, frame_decode_1, ARR_LEN);
-			/*
+			//from_16bit_to_f32(frame_decode_1, frame_long_1, ARR_LEN);
+			equalizerFilter(frame_decode_1, frame_decode_1, (frameInfo.outputSamps));
+			//from_f32_to_16bit(frame_long_1, frame_decode_1, ARR_LEN);
+
 			for (int i = 0; i < 3000; i++) {
-				frame_deepcopy_1[i] = frame_decode_1[i];
+				//frame_decode_1[i] = (int16_t)frame_long_1[i];
+				//frame_deepcopy_1[i] = frame_decode_1[i];
 		 		frame_decode_1[i] = (frame_decode_1[i]+32768)>>4;
 			}
-			vumeterTransform(frame_deepcopy_1);
-			*/
+			//vumeterTransform(frame_deepcopy_1);
+
 		}
 		else{
 			while(1);
@@ -204,6 +208,20 @@ static void from_32bit_to_16bit(int32_t* input, int16_t* output, int32_t len) {
 		output[i] = (int16_t)input[i];
 	}
 }
+
+static void from_16bit_to_f32(int16_t* input, float* output, int32_t len) {
+	for (int i=0; i<len; i++) {
+		output[i] = ((float)input[i]);
+	}
+}
+
+
+static void from_f32_to_16bit(float* input, int16_t* output, int32_t len) {
+	for (int i=0; i<len; i++) {
+		output[i] = (int16_t)input[i];
+	}
+}
+
 
 
 

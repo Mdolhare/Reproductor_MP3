@@ -51,6 +51,7 @@
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
 
+static void callback(void);
 
 /*******************************************************************************
  *******************************************************************************
@@ -59,6 +60,26 @@
  *******************************************************************************/
 void pitFunc(void);
 void playPause(void);
+
+/* Función que se llama 1 vez, al comienzo del programa */
+void App_Init_2 (void) {
+
+	LCD_Init(0x27, 20, 4);
+
+	gpioMode(PORTNUM2PIN(PA,4), INPUT);
+	gpioIRQ(PORTNUM2PIN(PA,4),GPIO_IRQ_MODE_FALLING_EDGE, callback);
+
+}
+
+/* Función que se llama constantemente en un ciclo infinito */
+/*
+void App_Run_2 (void) {
+	if(d_flag){
+		delayMicroseconds();
+		d_flag=false;
+	}
+}*/
+
 
 void App_Init (void) {
 
@@ -70,12 +91,6 @@ void App_Init (void) {
 	gpioWrite(LED_G, HIGH);
 	//-
 	SD_init();
-
-}
-
-void App_Init_2 (void) {
-
-//	vumeterTransform(sine_wave);
 
 }
 
@@ -108,7 +123,7 @@ void App_Run(){
 
 		if(EG_isNewEvent()){
 			ev = EG_getEvent();
-			fsm(state,ev);
+			state = fsm(state,ev);
 		}
 
 		playMusic();
@@ -132,5 +147,9 @@ void pitFunc(void)
 {
 	int i;
 }
+/*
+void callback(void) {
+	d_flag = true;
+}*/
 
 
