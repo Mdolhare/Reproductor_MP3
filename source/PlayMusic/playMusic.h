@@ -37,7 +37,7 @@
  ******************************************************************************/
 
 void playMusicInit(void);
-void playMusic(void);
+void playMusic(int volume);
 void playMusicPause(void);
 
 /*******************************************************************************

@@ -126,7 +126,7 @@ void App_Run(){
 			state = fsm(state,ev);
 		}
 
-		playMusic();
+		playMusic(30);
 	}
 
 }

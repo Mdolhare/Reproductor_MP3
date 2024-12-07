@@ -40,13 +40,13 @@
 
 typedef enum {
 	HEIGHT1 = 0,
-	HEIGHT2 = 500,
-	HEIGHT3 = 1000,
-	HEIGHT4 = 1500,
-	HEIGHT5 = 2000,
-	HEIGHT6 = 2500,
-	HEIGHT7 = 3000,
-	HEIGHT8 = 3500,
+	HEIGHT2 = 300,
+	HEIGHT3 = 600,
+	HEIGHT4 = 900,
+	HEIGHT5 = 1200,
+	HEIGHT6 = 1500,
+	HEIGHT7 = 1800,
+	HEIGHT8 = 2100,
 } heights_t;
 
 
@@ -92,7 +92,7 @@ static uint16_t sampleSize;
 
 void vumeterInit(uint16_t _sampleSize, uint32_t fs, float32_t lowBand, float32_t highBand) {
 
-	arm_rfft_init_q15(&fftInstance, _sampleSize, 0, 1);
+	arm_rfft_init_q15(&fftInstance, MAX_SAMPLE_SIZE, 0, 1);
 
 	sampleSize = _sampleSize;
 
@@ -100,7 +100,7 @@ void vumeterInit(uint16_t _sampleSize, uint32_t fs, float32_t lowBand, float32_t
 	float32_t freqMult = pow(highBand/lowBand, 1/((float)VUMETER_BIN_AMOUNT-1));
 
 	float32_t centerFreq = lowBand;
-	float32_t centerBin = centerFreq/binWidth;
+	float32_t centerBin = (centerFreq/binWidth);
 
 	for (int8_t bin=0; bin<VUMETER_BIN_AMOUNT; bin++) {
 		centerFreq = centerFreq*freqMult;
@@ -121,7 +121,7 @@ void vumeterTransform(int16_t* data) {
 
 	arm_rfft_q15(&fftInstance, data, output);
 
-	arm_cmplx_mag_q15(output, fft_abs, sampleSize);
+	arm_cmplx_mag_q15(output, fft_abs, sampleSize*2);
 
 	distributeBins(fft_abs);	//solucionar problema de ganancia a altas frecuencias
 
@@ -135,7 +135,7 @@ void vumeterTransform(int16_t* data) {
  ******************************************************************************/
 
 static uint32_t myRound(float32_t num) {
-	return (num - (int)num) < 0.5 ? floor(num) : ceil(num);
+	return ((num - (int)num) < 0.5 ? floor(num) : ceil(num))*10;
 }
 
 static void distributeBins(int16_t* fft) {
@@ -147,7 +147,7 @@ static void distributeBins(int16_t* fft) {
 			temp += fft[i];
 		}
 
-		vumeterBins[bin] = temp;//(temp / (limits[bin] - lowerLimit))*10;
+		vumeterBins[bin] = (temp / (limits[bin] - lowerLimit))*10;
 
 
 		temp = 0;

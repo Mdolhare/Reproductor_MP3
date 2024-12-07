@@ -112,14 +112,14 @@ void playMusicInit(void) {
 	audio_init(frameInfo.samprate, frame_decode_1, frame_decode_2,
 			frameInfo.outputSamps, &transfer_to_dac_1);
 
-	vumeterInit(4096, frameInfo.samprate, 80, 15000);
+	vumeterInit(4096, frameInfo.samprate, 80, 15000);//frameInfo.samprate/2);
 
-	int8_t gainDB[8] = {2,2,2,2,2,2,2,2};
+	int8_t gainDB[5] = {0,0,0,0,0};
 
 	equalizerInit(gainDB);
 }
 
-void playMusic(void) {
+void playMusic(int volume) {
 
 	if(transfer_to_dac_1 && !buffer_complete)
 	{
@@ -127,10 +127,10 @@ void playMusic(void) {
 			buffer_complete = true;
 
 			for(int i=0;i<ARR_LEN/2 + 1;i++) {
-				frame_decode_2[i] = frame_decode_2[2*i];
+				frame_decode_2[i] = frame_decode_2[2*i];//*(volume/30);
 			}
 
-			equalizerFilter(frame_decode_2, frame_decode_2, (frameInfo.outputSamps)/2);
+			//equalizerFilter(frame_decode_2, frame_decode_2, (frameInfo.outputSamps)/2);
 
 			for (int i = 0; i < 5000; i++) {
 				frame_deepcopy_2[i] = frame_decode_2[i];
@@ -150,10 +150,10 @@ void playMusic(void) {
 			buffer_complete = true;
 
 			for(int i=0;i<ARR_LEN/2 + 1;i++) {
-				frame_decode_1[i] = frame_decode_1[2*i];
+				frame_decode_1[i] = frame_decode_1[2*i];//*(volume/30);
 			}
 
-			equalizerFilter(frame_decode_1, frame_decode_1, (frameInfo.outputSamps)/2);
+			//equalizerFilter(frame_decode_1, frame_decode_1, (frameInfo.outputSamps)/2);
 
 			for (int i = 0; i < 5000; i++) {
 				frame_deepcopy_1[i] = frame_decode_1[i];
@@ -197,34 +197,6 @@ void playMusicPause(void){
                         LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
-
-
-static void from_16bit_to_32bit(int16_t* input, int32_t* output, int32_t len) {
-	for (int i=0; i<len; i++) {
-		output[i] = ((int32_t)input[i]);
-	}
-}
-
-
-static void from_32bit_to_16bit(int32_t* input, int16_t* output, int32_t len) {
-	for (int i=0; i<len; i++) {
-		output[i] = (int16_t)input[i];
-	}
-}
-
-static void from_16bit_to_f32(int16_t* input, float* output, int32_t len) {
-	for (int i=0; i<len; i++) {
-		output[i] = ((float)input[i]);
-	}
-}
-
-
-static void from_f32_to_16bit(float* input, int16_t* output, int32_t len) {
-	for (int i=0; i<len; i++) {
-		output[i] = (int16_t)input[i];
-	}
-}
-
 
 
 

@@ -48,7 +48,7 @@ bool decoderGetFrame(unsigned char *frame_decode,MP3FrameInfo * _frameInfo)
 	if (!file_was_open)
 	{
 		fr = f_mount(&FatFs, "", 0);
-		fr = f_open(&FileMP3, "himno1.mp3", FA_READ);	//"Boca_Yo_Te_Amo.mp3""himno1.mp3"
+		fr = f_open(&FileMP3, "El Sensei (64).mp3", FA_READ);	//"Boca_Yo_Te_Amo.mp3""himno1.mp3""El Sensei (64).mp3"
 		file_was_open = true;
 	}
 	else
