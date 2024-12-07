@@ -26,7 +26,7 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
-#define ARR_LEN 4096
+#define ARR_LEN 8192
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -99,10 +99,11 @@ void playMusicInit(void) {
 		while(1);
 	}
 	uint32_t i = 0;
+	/*
 	for(i = 0; i < 3000; i++){
 		frame_decode_1[i] = frame_decode_1[i]/4;
 	}
-
+	*/
 
 	transfer_to_dac_1 = true;
 	buffer_complete = true;
@@ -113,7 +114,7 @@ void playMusicInit(void) {
 
 	vumeterInit(4096, frameInfo.samprate, 80, 15000);
 
-	int8_t gainDB[8] = {0,0,0,0,0,0,0,0};
+	int8_t gainDB[8] = {2,2,2,2,2,2,2,2};
 
 	equalizerInit(gainDB);
 }
@@ -125,16 +126,17 @@ void playMusic(void) {
 		if(decoderGetFrame(frame_decode_2, &frameInfo)){
 			buffer_complete = true;
 
-			//from_16bit_to_f32(frame_decode_2, frame_long_2, ARR_LEN);
-			equalizerFilter(frame_decode_2, frame_decode_2, (frameInfo.outputSamps));
-			//from_f32_to_16bit(frame_long_2, frame_decode_2, ARR_LEN);
+			for(int i=0;i<ARR_LEN/2 + 1;i++) {
+				frame_decode_2[i] = frame_decode_2[2*i];
+			}
 
-			for (int i = 0; i < 3000; i++) {
-				 //frame_decode_2[i] = (int16_t)frame_long_2[i];
-				//frame_deepcopy_2[i] = frame_decode_2[i];
+			equalizerFilter(frame_decode_2, frame_decode_2, (frameInfo.outputSamps)/2);
+
+			for (int i = 0; i < 5000; i++) {
+				frame_deepcopy_2[i] = frame_decode_2[i];
 				frame_decode_2[i] = (frame_decode_2[i]+32768)>>4;
 			}
-			//vumeterTransform(frame_deepcopy_2);
+			vumeterTransform(frame_deepcopy_2);
 
 		}
 		else{
@@ -147,16 +149,17 @@ void playMusic(void) {
 		if(decoderGetFrame(frame_decode_1, &frameInfo)){
 			buffer_complete = true;
 
-			//from_16bit_to_f32(frame_decode_1, frame_long_1, ARR_LEN);
-			equalizerFilter(frame_decode_1, frame_decode_1, (frameInfo.outputSamps));
-			//from_f32_to_16bit(frame_long_1, frame_decode_1, ARR_LEN);
+			for(int i=0;i<ARR_LEN/2 + 1;i++) {
+				frame_decode_1[i] = frame_decode_1[2*i];
+			}
 
-			for (int i = 0; i < 3000; i++) {
-				//frame_decode_1[i] = (int16_t)frame_long_1[i];
-				//frame_deepcopy_1[i] = frame_decode_1[i];
+			equalizerFilter(frame_decode_1, frame_decode_1, (frameInfo.outputSamps)/2);
+
+			for (int i = 0; i < 5000; i++) {
+				frame_deepcopy_1[i] = frame_decode_1[i];
 		 		frame_decode_1[i] = (frame_decode_1[i]+32768)>>4;
 			}
-			//vumeterTransform(frame_deepcopy_1);
+			vumeterTransform(frame_deepcopy_1);
 
 		}
 		else{

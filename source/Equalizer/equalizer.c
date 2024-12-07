@@ -78,58 +78,58 @@ void equalizerInit(int8_t* gainDB) {
 
 	arm_biquad_cascade_df1_init_q31(&S1, NUMSTAGES,
 			(q31_t*) &coeffTable[(TABLE_LEN/NUMBER_OF_BANDS)*0 + 10*(gainDB[0] + 10)],
-			 &biquadStateBand1Q31[0], NUMSTAGES);
+			 &(biquadStateBand1Q31[0]), NUMSTAGES);
 	arm_biquad_cascade_df1_init_q31(&S2, NUMSTAGES,
 		    (q31_t*) &coeffTable[(TABLE_LEN/NUMBER_OF_BANDS)*1 + 10*(gainDB[1] + 10)],
-		    &biquadStateBand2Q31[0], NUMSTAGES);
+		    &(biquadStateBand2Q31[0]), NUMSTAGES);
 	arm_biquad_cascade_df1_init_q31(&S3, NUMSTAGES,
 		    (q31_t*) &coeffTable[(TABLE_LEN/NUMBER_OF_BANDS)*2 + 10*(gainDB[2] + 10)],
-		    &biquadStateBand3Q31[0], NUMSTAGES);
+		    &(biquadStateBand3Q31[0]), NUMSTAGES);
 	arm_biquad_cascade_df1_init_q31(&S4, NUMSTAGES,
 		    (q31_t*) &coeffTable[(TABLE_LEN/NUMBER_OF_BANDS)*3 + 10*(gainDB[3] + 10)],
-		    &biquadStateBand4Q31[0], NUMSTAGES);
+		    &(biquadStateBand4Q31[0]), NUMSTAGES);
 	arm_biquad_cascade_df1_init_q31(&S5, NUMSTAGES,
 		    (q31_t*) &coeffTable[(TABLE_LEN/NUMBER_OF_BANDS)*4 + 10*(gainDB[4] + 10)],
-		    &biquadStateBand5Q31[0], NUMSTAGES);
+		    &(biquadStateBand5Q31[0]), NUMSTAGES);
 	arm_biquad_cascade_df1_init_q31(&S6, NUMSTAGES,
-			    (q31_t*) &coeffTable[(TABLE_LEN/NUMBER_OF_BANDS)*5 + 10*(gainDB[5] + 10)],
-			    &biquadStateBand6Q31[0], NUMSTAGES);
+			(q31_t*) &coeffTable[(TABLE_LEN/NUMBER_OF_BANDS)*5 + 10*(gainDB[5] + 10)],
+			&(biquadStateBand6Q31[0]), NUMSTAGES);
 	arm_biquad_cascade_df1_init_q31(&S7, NUMSTAGES,
-			    (q31_t*) &coeffTable[(TABLE_LEN/NUMBER_OF_BANDS)*6 + 10*(gainDB[6] + 10)],
-			    &biquadStateBand7Q31[0], NUMSTAGES);
+			(q31_t*) &coeffTable[(TABLE_LEN/NUMBER_OF_BANDS)*6 + 10*(gainDB[6] + 10)],
+			&(biquadStateBand7Q31[0]), NUMSTAGES);
 	arm_biquad_cascade_df1_init_q31(&S8, NUMSTAGES,
-			    (q31_t*) &coeffTable[(TABLE_LEN/NUMBER_OF_BANDS)*7 + 10*(gainDB[7] + 10)],
-			    &biquadStateBand8Q31[0], NUMSTAGES);
+			(q31_t*) &coeffTable[(TABLE_LEN/NUMBER_OF_BANDS)*7 + 10*(gainDB[7] + 10)],
+			&(biquadStateBand8Q31[0]), NUMSTAGES);
 
 }
 
 void equalizerFilter(int16_t* inputBuffer, int16_t* outputBuffer, int32_t len) {
 
-	q31_t inputBlock[128];
-	q31_t outputBlock[128];
+	q31_t inputBlock[5000];
+	q31_t outputBlock[5000];
 
-	int blocksize = len<<5;//len/10;
+	int blocksize = len;//len/10;
 
 	for (int i=0; i<(len/blocksize); i++) {
 
 		arm_q15_to_q31(inputBuffer + (i*blocksize), inputBlock, blocksize);
 		//arm_float_to_q31(inputBuffer + (i*BLOCKSIZE), inputBlock, BLOCKSIZE);
 
-		arm_scale_q31(inputBlock, 0x7FFFFFFF, -3, inputBlock, blocksize);
+		arm_scale_q31(inputBlock, 0x7FFFFFFF, -1, inputBlock, blocksize);
 
 		arm_biquad_cascade_df1_fast_q31(&S1, inputBlock, outputBlock, blocksize);
-		arm_biquad_cascade_df1_fast_q31(&S2, outputBlock, outputBlock, blocksize);
+		//arm_biquad_cascade_df1_fast_q31(&S2, outputBlock, outputBlock, blocksize);
 		arm_biquad_cascade_df1_fast_q31(&S3, outputBlock, outputBlock, blocksize);
-		arm_biquad_cascade_df1_fast_q31(&S4, outputBlock, outputBlock, blocksize);
+		//arm_biquad_cascade_df1_fast_q31(&S4, outputBlock, outputBlock, blocksize);
 		arm_biquad_cascade_df1_fast_q31(&S5, outputBlock, outputBlock, blocksize);
-		arm_biquad_cascade_df1_fast_q31(&S6, outputBlock, outputBlock, blocksize);
+		//arm_biquad_cascade_df1_fast_q31(&S6, outputBlock, outputBlock, blocksize);
 		arm_biquad_cascade_df1_fast_q31(&S7, outputBlock, outputBlock, blocksize);
 		arm_biquad_cascade_df1_fast_q31(&S8, outputBlock, outputBlock, blocksize);
 
-		arm_scale_q31(outputBlock, 0x7FFFFFFF, -3, outputBlock, blocksize);
-
 		arm_q31_to_q15(outputBlock, outputBuffer + (i*blocksize), blocksize);
 		//arm_q31_to_float(outputBlock, outputBuffer + (i*BLOCKSIZE), BLOCKSIZE);
+
+		//arm_scale_q15(outputBuffer + (i*BLOCKSIZE), 0x7FFF, -3, outputBuffer + (i*BLOCKSIZE), blocksize);
 
 		//arm_scale_f32(outputBuffer + (i*BLOCKSIZE), 8.0f, outputBuffer + (i*BLOCKSIZE), BLOCKSIZE);
 	}
