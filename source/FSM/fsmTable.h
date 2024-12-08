@@ -20,20 +20,14 @@
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
 typedef enum {
-	POSICION_1,
-	POSICION_2,
-	POSICION_3,
-	POSICION_4,
 	MOV_ABAJO,
 	MOV_ARRIBA,
+	SELECT,
 	HAY_SD,
 	NO_HAY_SD,
 	TIME_OUT_SD,
-	START,
-	APAGAR,
-	NADA,
-	DEFAULT
-}events_t;
+	NONE
+}hw_events_t;
 
 typedef	unsigned char byte_t;
 
@@ -56,7 +50,6 @@ typedef state_edge_t* state_t;
  ******************************************************************************/
 
 state_t FSM_GetInitState(void);
-
 /*******************************************************************************
  ******************************************************************************/
 

@@ -1,9 +1,6 @@
 #include "LCD_i2c.h"
 #include "../../MCAL/I2C/i2c.h"
 #include "../../MCAL/PIT/pit.h"
-#define LCD_I2C_ADDR 0x27 // Dirección I2C del display
-#define LCD_I2C_COLS 16   // Número de columnas del display
-#define LCD_I2C_ROWS 2    // Número de filas del display
 
 // commands
 #define LCD_CLEARDISPLAY 0x01
@@ -47,6 +44,9 @@
 #define LCD_BACKLIGHT 0x08
 #define LCD_NOBACKLIGHT 0x00
 
+// Buffer LCD
+#define LCD_BUFFER_SIZE 80
+
 #define En 0b00000100  // Enable bit
 #define Rw 0b00000010  // Read/Write bit
 #define Rs 0b00000001  // Register select bit
@@ -59,6 +59,9 @@ static uint8_t _displaymode;
 static uint8_t _numlines;
 static uint8_t _backlightval;
 static bool t_flag = true;
+static uint8_t _cols;
+static uint8_t _rows;
+static uint8_t _address;
 
 static void send(uint8_t value, uint8_t mode);
 static void write4bits(uint8_t value);
@@ -71,9 +74,12 @@ static i2c_cfg_t cfg;
 
 
 
-void LCD_I2C_Init(void) {
+void LCD_I2C_Init(uint8_t address, uint8_t rows) {
 	pitInit();
     i2cInit(I2C_0);
+    _address = address;
+    _rows = rows;
+    _cols = LCD_BUFFER_SIZE/rows;
 
 }
 
@@ -134,13 +140,11 @@ void LCD_I2C_Home(void) {
 }
 
 void LCD_I2C_SetCursor(uint8_t column, uint8_t row) {
-    uint8_t row_offsets[] = {0x00, 0x40, 0x14, 0x54};
-//    if (row >= _numlines) {
-//        row = _numlines - 1;
-//    }
-    send(LCD_SETDDRAMADDR | (column + row_offsets[row]), 0);
-    delayMicroseconds(2000);
-
+    if(row < _rows && column < _cols){
+        uint8_t row_offsets[] = {0x00, 0x40, 0x14, 0x54};
+        send(LCD_SETDDRAMADDR | (column + row_offsets[row]), 0);
+        delayMicroseconds(2000);
+    }
 }
 
 void LCD_I2C_WriteChar(uint8_t character) {
@@ -211,6 +215,13 @@ void LCD_I2C_NoAutoscroll(void) {
     send(LCD_ENTRYMODESET | _displaymode, 0);
 }
 
+void LCD_I2C_CreateChar(uint8_t location, uint8_t charmap[]) {
+    location &= 0x7; // we only have 8 locations 0-7
+    send(LCD_SETCGRAMADDR | (location << 3), 0);
+    for (int i = 0; i < 8; i++) {
+        LCD_I2C_WriteChar(charmap[i]);
+    }
+}
 
 static void send(uint8_t value, uint8_t mode) {
     uint8_t highnib = value & 0xf0;
@@ -226,23 +237,23 @@ static void write4bits(uint8_t value) {
 
 static void expanderWrite(uint8_t data) {
     i2cWrite(data | _backlightval);
-	delayMicroseconds(500);
+	delayMicroseconds(10);//era 500
 
 }
 
 static void pulseEnable(uint8_t data) {
     expanderWrite(data | En);
-    delayMicroseconds(1000);
+    delayMicroseconds(10);//era 1000
     expanderWrite(data & ~En);
-    delayMicroseconds(5000);
+    delayMicroseconds(50); // era 5000
 }
 
 static void i2cWrite(uint8_t data) {
     cfg.mode = TX;
     cfg.cant_bytes_tx = 1;
     cfg.data[0] = data;
-    cfg.address = LCD_I2C_ADDR;
-    i2cInit_master(I2C_0, &cfg, 0, 0x30);
+    cfg.address = _address;
+    i2cInit_master(I2C_0, &cfg, 0, 0x10);
     while (I2CisBusy(I2C_0));
 }
 
@@ -261,3 +272,4 @@ static void delayMicroseconds(uint32_t delay) {
 static void timer(void) {
 	t_flag = false;
 }
+

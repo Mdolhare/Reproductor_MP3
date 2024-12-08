@@ -24,6 +24,8 @@ static int i = 0;
 
 static FRESULT res;
 
+//static char name[255] = "";
+
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
@@ -40,7 +42,7 @@ static DIR directory;
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
 
-void ReadDir(DIR* dir, FILINFO* fileinf, char* name);
+void ReadDir(DIR* dir, FILINFO* fileinf, char* dirname);
 
 
 /*******************************************************************************
@@ -54,25 +56,11 @@ void ReadDir(DIR* dir, FILINFO* fileinf, char* name);
  *******************************************************************************
  ******************************************************************************/
 /*
-bool InitFileSys()
+void InitFileSys()
 {
-	if(f_mount(&fsobj, "", 0))
-	{
-		return false;
-	}
 
-	return true;
 }
 
-
-bool OpenDir(TCHAR * path)
-{
-	if(!OpenFile(path))
-	{
-		return false;
-	}
-	return true;
-}
 */
 
 /*
@@ -126,6 +114,7 @@ bool mountSD()
 
 void readSD ()
 {
+	//name = "";
 	ReadDir(&directory, &fileinf, "");
 	//i = 0;
 }
@@ -144,29 +133,42 @@ char * getPath(int i)
  ******************************************************************************/
 // entro a la sd -> leo la extension del archivo -> si es mp3, guardo el path -> si es dir entro y vuelvo a leer -> si es con . lo ignoro
 
-void ReadDir(DIR* dir, FILINFO* fileinf, char* name)
+void ReadDir(DIR* dir, FILINFO* fileinf, char* dirname)
 {
-	if(!f_opendir(dir, name))
+	char namedir[255] = {0};
+	char * cpy = strcpy(namedir, dirname);
+	int ok = 0;
+	int ch = '.';
+	char * ext;
+	if(!f_opendir(dir, &namedir))
 	{
 		for( ; ; )
 		{
+			char namefile[255] = {0};
 			f_readdir(dir, fileinf);
 			if(fileinf->fname[0] == '.')
 			{
 				continue;
 			}
+			else if(fileinf -> fname[0] == 0)
+			{
+				break;
+			}
 			else if(fileinf -> fattrib == AM_DIR)
 			{
 				DIR newdir;
 				FILINFO newfileinf;
-				char* newname = strcat(strcat(name, '/'), fileinf -> fname);
+				char* newnamedir[255] = {0};
+				//char newname[255] = strcat(strcat(name, '/'), fileinf -> fname);
+				char* newname = strcat(strcat(newnamedir, "/"), fileinf -> fname);
 				ReadDir(&newdir, &newfileinf, newname);
+				//volver el name a nada?
 			}
-			else if(strcmp(fileinf -> fname, ".mp3"))
+			else if(!(ok = strcmp(ext = strchr(fileinf -> fname, ch), ".mp3")))		//identicas=0. Izq contenido en der>0. Der contenido en izq<0
 			{
 				//guardar el path
 				int j = 0;
-				char* filename = strcat(strcat(name, '/'), fileinf -> fname);
+				char* filename = strcat(strcat(namefile, "/"), fileinf -> fname);
 				while(*filename)
 				{
 					path[i][j] = *filename;
@@ -174,10 +176,6 @@ void ReadDir(DIR* dir, FILINFO* fileinf, char* name)
 					j++;
 				}
 				i++;
-			}
-			else if(fileinf -> fname == 0)
-			{
-				break;
 			}
 			//else ya no queda nada y hago break
 		}

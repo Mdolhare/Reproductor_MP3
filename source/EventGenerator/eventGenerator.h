@@ -37,6 +37,8 @@ void EG_init(void);
 
 events_t EG_getEvent(void);
 
+void EG_addEvent(uint8_t event);
+
 bool EG_isNewEvent(void);
 
 

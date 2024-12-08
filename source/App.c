@@ -30,7 +30,8 @@
 #include "Drivers/MCAL/I2C/i2c.h"
 #include "Drivers/HAL/display/displayLCD.h"
 
-
+static void showVolumen(void);
+static void dibujarBarra(int nivel);
 //en el concector jack VERDE es GND
 
 
@@ -58,12 +59,21 @@ FILINFO fno;    /* File information */
  ******************************************************************************/
 static i2c_cfg_t cfg;
 static bool flag_v1 = false;
-static char lcd_chars[] =
-" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
-static const char line1[] = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFG"; //HIJKLMN
-static const char line2[] = "OPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxy"; //z{|}~
-static const char line11[] = " !\"#$%&'()*+,-."; ///0123456789:;<=>?@ABCDEFGHIJKLMN
+/*
+static uint8_t nivel1[8] = {0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000};
+static uint8_t nivel2[8] = {0b11000, 0b11000, 0b11000, 0b11000, 0b11000, 0b11000, 0b11000, 0b11000};
+static uint8_t nivel3[8] = {0b11100, 0b11100, 0b11100, 0b11100, 0b11100, 0b11100, 0b11100, 0b11100};
+static uint8_t nivel4[8] = {0b11110, 0b11110, 0b11110, 0b11110, 0b11110, 0b11110, 0b11110, 0b11110};
+static uint8_t nivel5[8] = {0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111};
 
+enum vol_bars{
+	N1,
+	N2,
+	N3,
+	N4,
+	N5
+};
+*/
 
 //strncpy(line1, lcd_chars, 40);         // Copiar los primeros 40 caracteres
 //strncpy(line2, lcd_chars + 40, 40);   // Copiar los siguientes 40 caracteres
@@ -99,10 +109,11 @@ void App_Init (void) {
 	SD_init();
 	EG_init();
 	pitInit();
-
+	displayLCD_Init(0x27);
 }
+
 void App_Init_1 (void) {
-	displayLCD_Init();
+	displayLCD_Init(0x27);
 
     gpioMode(PORTNUM2PIN(PA,4), INPUT);
     gpioIRQ(PORTNUM2PIN(PA,4),GPIO_IRQ_MODE_FALLING_EDGE, callback);
@@ -123,16 +134,31 @@ static int i = 0;
 	if(flag_v1){
 		if( i == 0){
 			displayLCD_Begin();
+
 			i++;
+			//displayLCD_ShowCursorAt(19,0);
+			//displayLCD_ShowStringLine("Hello Word 0", 0);
+			//displayLCD_ShowStringLine("Hello Word 1", 1);
+			//displayLCD_ShowStringLine("Hello Word 2", 2);
+			//displayLCD_ShowStringLine("Hello Word 3", 3);
+
+			//create chars
+/*			displayLCD_createChar(0, nivel1);
+			displayLCD_createChar(1, nivel2);
+			displayLCD_createChar(2, nivel3);
+			displayLCD_createChar(3, nivel4);
+			displayLCD_createChar(4, nivel5);
+*/
+			showVolumen();
+
 		}
 
-		if(i<11){
+
+		if(i<31){
+			dibujarBarra(i-1);
 			i++;
-			displayLCD_ShowCharAt('0'+i,15,1);
 		}
 		else{
-			displayLCD_ShowStringLine1("Hello Word");
-
 			i=1;
 		}
 		//DISP_SetCursor(9,1);
@@ -145,7 +171,8 @@ static int i = 0;
 
 void App_Run(){
 	bool ok=false;
-
+	//EG_addEvent(NONE);
+	//EG_addEvent(HAY_SD);
 	state_t state = FSM_GetInitState();
 	uint8_t ev = 0;
 	bool hay_sd = false;
@@ -160,7 +187,8 @@ void App_Run(){
 	}
 
 
-
+/*
+ * TEST READ FILES
 	while(1){
 		if(SD_isSDcard() ){
 			if(ok==false){
@@ -187,17 +215,7 @@ void App_Run(){
 		}
 	}
 
-
-/*	while(1){
-		gpioWrite(PORTNUM2PIN(PC,3), SD_isSDcard());
-		gpioToggle(PORTNUM2PIN(PC,3));
-		uint32_t i = 0xFFFFF;
-		while(i--);
-	}
 */
-
-
-
 
 }
 
@@ -213,8 +231,6 @@ void App_Run_5(){
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run_1(void) {
 	bool ok=false;
-
-
 
 	while(1){
 		if(SD_isSDcard()){
@@ -327,5 +343,3 @@ void pitFunc(void)
 {
 	int i;
 }
-
-

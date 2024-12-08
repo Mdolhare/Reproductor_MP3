@@ -16,6 +16,7 @@
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
+#define LCD_BUFFER_SIZE 80
 
 
 /*******************************************************************************
@@ -25,7 +26,7 @@
 /**
  * @brief Inicializa el display LCD por medio de I2C
  */
-void LCD_I2C_Init(void);
+void LCD_I2C_Init(uint8_t address, uint8_t rows);
 
 
 /**
@@ -131,6 +132,8 @@ void LCD_I2C_Autoscroll(void);
  * @brief Desactiva el desplazamiento automático
  */
 void LCD_I2C_NoAutoscroll(void);
+
+void LCD_I2C_CreateChar(uint8_t location, uint8_t charmap[]);
 
 /*******************************************************************************
  ******************************************************************************/

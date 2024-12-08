@@ -1,57 +1,36 @@
-/*
- * FileSys.h
- *
- *  Created on: Apr 1, 2024
- *      Author: Grupo 2
- */
+#ifndef FSM_H_
+#define FSM_H_
 
-#ifndef FILESYS_H_
-#define FILESYS_H_
 
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
 
-#include <stdint.h>
-#include <stdbool.h>
-
-#include "FAT/ff.h"
-//#include "node.h"
-#include "../Drivers/HAL/SD/SD.h"
+#include "fsmTable.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-//#define NAMELENGTH 12+1    	//sale de FILINFO
-//#define PATHLENGHT 50		//lo mismo para este
+
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
+
 
 /*******************************************************************************
  * VARIABLE PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
 
 
-
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
-//bool InitFileSys(void);
 
-
-bool mountSD(void);
-
-void readSD(void);
-
-char * getPath(int i);
-
+state_t fsm(state_t state, byte_t event);
 
 /*******************************************************************************
  ******************************************************************************/
 
 
-
-
-#endif /* FILESYS_H_ */
+#endif /* FSM_H_ */

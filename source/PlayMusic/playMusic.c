@@ -170,10 +170,10 @@ void playMusic(void) {
 }
 
 void playMusicPause(void){
-	//debug
-	gpioWrite(LED_R, LOW);
-	gpioWrite(LED_B, LOW);
-	gpioWrite(LED_G, LOW);
+//debug
+//	gpioWrite(LED_R, LOW);
+//	gpioWrite(LED_B, LOW);
+//	gpioWrite(LED_G, LOW);
 
 	static bool isPlaying = false;
 	if(isPlaying){
