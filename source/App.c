@@ -26,6 +26,8 @@
 #include "Vumeter/vumeter.h"
 #include "FSM/fsm.h"
 #include "FSM/fsmTable.h"
+#include "Equalizer/equalizer.h"
+#include "Drivers/HAL/Matrix/matrix.h"
 
 
 //en el concector jack VERDE es GND
@@ -64,10 +66,10 @@ void playPause(void);
 /* Función que se llama 1 vez, al comienzo del programa */
 void App_Init_2 (void) {
 
-	LCD_Init(0x27, 20, 4);
+	uint8_t gains[5] = {1,2,3,4,5};
 
-	gpioMode(PORTNUM2PIN(PA,4), INPUT);
-	gpioIRQ(PORTNUM2PIN(PA,4),GPIO_IRQ_MODE_FALLING_EDGE, callback);
+	matrixInit();
+	equalizerInit(gains);
 
 }
 
@@ -133,9 +135,7 @@ void App_Run(){
 
 
 
-void App_Run_5(){
-	vumeterInit(80, 44100, 80, 15000);
-	vumeterTransform(sine_wave);
+void App_Run_2(){
 
 	while(1);
 }

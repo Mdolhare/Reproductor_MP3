@@ -24,6 +24,15 @@
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
 
+typedef enum {
+	NORMAL,
+	JAZZ,
+	POP,
+	ROCK,
+	CLASSIC,
+	CUSTOM
+} presets_t;
+
 
 /*******************************************************************************
  * VARIABLE PROTOTYPES WITH GLOBAL SCOPE

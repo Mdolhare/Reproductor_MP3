@@ -112,7 +112,7 @@ void playMusicInit(void) {
 	audio_init(frameInfo.samprate, frame_decode_1, frame_decode_2,
 			frameInfo.outputSamps, &transfer_to_dac_1);
 
-	vumeterInit(4096, frameInfo.samprate, 80, 15000);//frameInfo.samprate/2);
+	vumeterInit(4096, frameInfo.samprate, 80, frameInfo.samprate/3);
 
 	int8_t gainDB[5] = {0,0,0,0,0};
 
@@ -120,6 +120,8 @@ void playMusicInit(void) {
 }
 
 void playMusic(int volume) {
+
+	int count = 0;
 
 	if(transfer_to_dac_1 && !buffer_complete)
 	{
@@ -132,11 +134,17 @@ void playMusic(int volume) {
 
 			//equalizerFilter(frame_decode_2, frame_decode_2, (frameInfo.outputSamps)/2);
 
-			for (int i = 0; i < 5000; i++) {
-				frame_deepcopy_2[i] = frame_decode_2[i];
+			for (int i = 0; i < 3000; i++) {
+				//if (count == 10) {
+					frame_deepcopy_2[i] = frame_decode_2[i];
+				//}
 				frame_decode_2[i] = (frame_decode_2[i]+32768)>>4;
 			}
-			vumeterTransform(frame_deepcopy_2);
+			//if (count == 10) {
+				vumeterTransform(frame_deepcopy_2);
+				count = 0;
+			//}
+			count++;
 
 		}
 		else{
@@ -155,11 +163,11 @@ void playMusic(int volume) {
 
 			//equalizerFilter(frame_decode_1, frame_decode_1, (frameInfo.outputSamps)/2);
 
-			for (int i = 0; i < 5000; i++) {
-				frame_deepcopy_1[i] = frame_decode_1[i];
+			for (int i = 0; i < 3000; i++) {
+				//frame_deepcopy_1[i] = frame_decode_1[i];
 		 		frame_decode_1[i] = (frame_decode_1[i]+32768)>>4;
 			}
-			vumeterTransform(frame_deepcopy_1);
+			//vumeterTransform(frame_deepcopy_1);
 
 		}
 		else{

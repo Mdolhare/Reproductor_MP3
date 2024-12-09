@@ -18,6 +18,8 @@
 #include <math.h>
 #include "../Drivers/HAL/Matrix/matrix.h"
 
+#include "hamming.h"
+
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
@@ -40,13 +42,13 @@
 
 typedef enum {
 	HEIGHT1 = 0,
-	HEIGHT2 = 300,
-	HEIGHT3 = 600,
-	HEIGHT4 = 900,
-	HEIGHT5 = 1200,
-	HEIGHT6 = 1500,
-	HEIGHT7 = 1800,
-	HEIGHT8 = 2100,
+	HEIGHT2 = 10,
+	HEIGHT3 = 20,
+	HEIGHT4 = 30,
+	HEIGHT5 = 40,
+	HEIGHT6 = 50,
+	HEIGHT7 = 60,
+	HEIGHT8 = 70,
 } heights_t;
 
 
@@ -106,10 +108,16 @@ void vumeterInit(uint16_t _sampleSize, uint32_t fs, float32_t lowBand, float32_t
 		centerFreq = centerFreq*freqMult;
 		float32_t nextCenterBin = centerFreq/binWidth;
 
-		float32_t highBin = (nextCenterBin - centerBin)/2 + centerBin;
+		float32_t highBin = (((nextCenterBin - centerBin)/2 + centerBin));
 		limits[bin] = myRound(highBin);
 
 		centerBin = nextCenterBin;
+	}
+
+	for (int8_t bin=0; bin<VUMETER_BIN_AMOUNT; bin++) {
+
+		limits[bin] = ((uint64_t)limits[bin]*4096)/limits[7];
+
 	}
 
 	matrixInit();
@@ -119,11 +127,14 @@ void vumeterTransform(int16_t* data) {
 
 	static int16_t output[MAX_SAMPLE_SIZE*2];
 
+	//for (int i = 0; i < MAX_SAMPLE_SIZE; i++)
+		//data[i] = data[i]*hamming_window[i];
+
 	arm_rfft_q15(&fftInstance, data, output);
 
 	arm_cmplx_mag_q15(output, fft_abs, sampleSize*2);
 
-	distributeBins(fft_abs);	//solucionar problema de ganancia a altas frecuencias
+	distributeBins(fft_abs);
 
 	sendBins(vumeterBins);	//aca enviar a la matriz
 }
@@ -143,12 +154,13 @@ static void distributeBins(int16_t* fft) {
 	uint32_t temp = 0;
 
 	for (uint16_t bin = 0; bin < VUMETER_BIN_AMOUNT; bin++) {
-		for (uint16_t i = lowerLimit; i <= limits[bin]; i++) {
+		for (uint16_t i = lowerLimit; i < limits[bin]; i++) {
 			temp += fft[i];
 		}
 
-		vumeterBins[bin] = (temp / (limits[bin] - lowerLimit))*10;
-
+		vumeterBins[bin] = (temp / (limits[bin] - lowerLimit));
+		if (bin == 0)
+			vumeterBins[bin] -= 15;
 
 		temp = 0;
 		lowerLimit = limits[bin] + 1;
@@ -194,7 +206,7 @@ static void sendBins(uint16_t* bins) {
 		else
 			updateLED(col + 6*COLUMNS, 0, 0, 0);
 
-		if (bins[col ] > HEIGHT8)
+		if (bins[col] > HEIGHT8)
 			updateLED(col + 7*COLUMNS, 0b00110000, 0b00110000, 0);
 		else
 			updateLED(col + 7*COLUMNS, 0, 0, 0);
