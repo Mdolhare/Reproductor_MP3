@@ -60,5 +60,6 @@ bool isFileOpen(void);
 void setIsFileOpen(bool b);
 ID3Tag_t * getID3Tag(void);
 void readID3Tag(void);
+void close();
 
 #endif // _MP#DECODER_H_

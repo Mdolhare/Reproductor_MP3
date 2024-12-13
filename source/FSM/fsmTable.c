@@ -408,11 +408,11 @@ state_t FSM_GetInitState(void) {
 static void do_nothing(void){}
 
 static void resetDiskAndWait(void){
-	//reset driver SD
-	SD_reset();
-
 	//Parar DAC
 	audio_pause();
+
+	//reset driver SD
+	SD_reset();
 
 	//mostrar que se inserte SD
 	show_insertSD();
@@ -532,7 +532,7 @@ static void nextSong(void){
 
 	}
 	playNewSong(getPath(current_song));
-	show_song_info();
+	//show_song_info();
 	//audio_nextSong();
 	//show_reproductor();
 
@@ -547,7 +547,7 @@ static void prevSong(void){
 		current_song = getCantSongs()-1;
 	}
 	playNewSong(getPath(current_song));
-	show_song_info();
+	//show_song_info();
 	//audio_prevSong();
 	//show_reproductor();
 }

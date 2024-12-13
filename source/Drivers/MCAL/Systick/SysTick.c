@@ -1,13 +1,19 @@
 #include "SysTick.h"
+#include "../Gpio/gpio.h"
 static pinIrqFun_t callbacks[MAX_FUNCTIONS];
 static bool called = false;
 static uint32_t idx = 0;
+#define LED_G PORTNUM2PIN(PE,26)
+
 
 __ISR__ SysTick_Handler(void) {
+
+	gpioWrite(LED_G, LOW);
 
 	for(int i = 0; i<idx; i++)
 		(callbacks[i])();
 
+	gpioWrite(LED_G, HIGH);
 
 }
 

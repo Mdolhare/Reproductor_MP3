@@ -41,14 +41,14 @@
 } heights_t;*/
 
 typedef enum {
-	HEIGHT1 = 0,
-	HEIGHT2 = 10,
-	HEIGHT3 = 20,
-	HEIGHT4 = 30,
-	HEIGHT5 = 40,
-	HEIGHT6 = 50,
-	HEIGHT7 = 60,
-	HEIGHT8 = 70,
+	HEIGHT1 = 30,
+	HEIGHT2 = 80,
+	HEIGHT3 = 120,
+	HEIGHT4 = 200,
+	HEIGHT5 = 260,
+	HEIGHT6 = 300,
+	HEIGHT7 = 400,
+	HEIGHT8 = 470,
 } heights_t;
 
 
@@ -158,9 +158,9 @@ static void distributeBins(int16_t* fft) {
 			temp += fft[i];
 		}
 
-		vumeterBins[bin] = (temp / (limits[bin] - lowerLimit));
+		vumeterBins[bin] = temp /*(temp / (limits[bin] - lowerLimit))*/;
 		if (bin == 0)
-			vumeterBins[bin] -= 15;
+			vumeterBins[bin] -= 0;//era 15
 
 		temp = 0;
 		lowerLimit = limits[bin] + 1;

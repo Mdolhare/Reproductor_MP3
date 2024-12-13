@@ -122,21 +122,21 @@ void playMusic() {
 
 
 			for (int i = 0; i < 3000; i++) {
-				if ((count == 5) && (i < 32)) {
+				if ( /*(count == 1) &&*/ (i < 1024)) {
 					frame_deepcopy_2[i] = frame_decode_2[i];
 				}
 
 				frame_decode_2[i] = (frame_decode_2[i]+32768)>>4;
 			}
-			if (count == 5) {
+//			if (count == 1) {
 				if(vumeter_enable){
 					vumeterTransform(frame_deepcopy_2);
 				}
 
-				count = 0;
-			}
+//				count = 0;
+//			}
 
-			count++;
+//			count++;
 		}
 		else{
 			//ENd song
@@ -197,7 +197,7 @@ void playPauseMusic(void){
 
 void playNewSong(char * song){
 
-
+	close();
 	setPath(song);
 	setIsFileOpen(false);
 	audio_pause();
@@ -213,26 +213,27 @@ void playNewSong(char * song){
 	//readID3Tag();
 
 	//Lee para primer frame, tener datos
-	if(decoderGetFrame(frame_decode_1, &frameInfo)){
+	while(! decoderGetFrame(frame_decode_1, &frameInfo))
+	if(1){
 
 	}
 	else{
 		//Error
 		while(1);
 	}
-	static bool init = false;
+	//static bool init = false;
 	audio_init(frameInfo.samprate, frame_decode_1, frame_decode_2,
 				frameInfo.outputSamps, &transfer_to_dac_1);
-	if (!init)
-	{
+//	if (!init)
+//	{
 
-		vumeterInit(32, frameInfo.samprate, 80, frameInfo.samprate/3);//frameInfo.samprate/2);
+		vumeterInit(1024, frameInfo.samprate, 80, frameInfo.samprate/3);//frameInfo.samprate/2);
 
 		int8_t gainDB[5] = {0,0,0,0,0};
 
 		equalizerInit(gainDB);
-		init =  true;
-	}
+//		init =  true;
+//	}
 
 	audio_resume();
 

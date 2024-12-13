@@ -202,10 +202,10 @@ static void show_equ_gain(int8_t* gainDB) {
 
 		if (gainDB[g] < 0) {
 			if(-gainDB[g] == 1)
-				updateLED((ROWS/2 - 1)*COLUMNS + col, 0, 0, 0b00110000);
+				updateLED((ROWS/2)*COLUMNS + col, 0, 0, 0b00110000);
 			else{
 				for (uint8_t i=0; i < ROWS/2; i++) {
-					if (i<(-gainDB[g]/2))
+					if (i<=( (-gainDB[g]-1) / 2))
 						if (gainDB[g]%2 == 0)
 							updateLED(i*COLUMNS + (ROWS/2)*COLUMNS + col, 0, 0b00110000, 0b00110000);
 						else
@@ -224,7 +224,7 @@ static void show_equ_gain(int8_t* gainDB) {
 				updateLED((ROWS/2 - 1)*COLUMNS + col, 0, 0, 0b00110000);
 			else{
 				for (uint8_t i=0; i<ROWS/2; i++) {
-					if (i<(gainDB[g]/2))
+					if (i<=((gainDB[g]-1)/2))
 						if (gainDB[g]%2 == 0)
 							updateLED((ROWS/2 - 1)*COLUMNS - i*COLUMNS + col, 0, 0b00110000, 0b00110000);
 						else

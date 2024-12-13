@@ -43,6 +43,10 @@ void setIsFileOpen(bool b){
 	file_was_open = b;
 }
 
+void close(){
+	if(file_was_open)
+		f_close(&FileMP3);
+}
 
 bool decoderGetFrame(unsigned char *frame_decode, MP3FrameInfo * _frameInfo)
 {

@@ -184,11 +184,7 @@ void App_Run(){
 			state = fsm(state,ev);
 		}
 		if(SD_getStatus() == SD_OK){
-			gpioWrite(LED_G, LOW);
-
 			playMusic();
-			gpioWrite(LED_G, HIGH);
-
 		}
 	}
 
