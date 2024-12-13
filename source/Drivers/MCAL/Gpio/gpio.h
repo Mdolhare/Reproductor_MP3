@@ -88,6 +88,9 @@ void gpioMode (pin_t pin, uint8_t mode);
  */
 bool gpioIRQ (pin_t pin, uint8_t irqMode, pinIrqFun_t irqFun);
 
+
+bool gpioDisableIRQ (pin_t pin);
+
 /**
  * @brief Write a HIGH or a LOW value to a digital pin
  * @param pin the pin to write (according PORTNUM2PIN)

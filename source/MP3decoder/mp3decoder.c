@@ -3,8 +3,11 @@
 #include "../Drivers/MCAL/Gpio/gpio.h"
 #include "../FAT/ff.h"
 #include "mp3decoder.h"
+#include <stdint.h>
 
-#define MAX_SIZE_FRAME 1940 //chequear
+#define MAX_SIZE_FRAME 2304//chequear
+#define INPUT_BUFF 1940
+#define LED_G PORTNUM2PIN(PE,26)
 
 static HMP3Decoder decoder;
 static MP3FrameInfo frameInfo;
@@ -12,12 +15,11 @@ static MP3FrameInfo frameInfo;
 static bool  file_was_open = false;
 static unsigned char* out_buffer[4096*400];
 
-
 static FATFS FatFs;		/* FatFs work area needed for each volume */
 static FIL FileMP3;		/* File object needed for each open file */
 static FRESULT fr;
-
-
+static char * _path;
+static ID3Tag tag;
 
 void decoderInit(void) {
     decoder = MP3InitDecoder();
@@ -34,28 +36,34 @@ uint16_t decoderGetBitrate(unsigned char *buf, uint32_t bytesLeft) {
     return frameInfo.bitrate;
 }
 
+bool isFileOpen(){
+	return file_was_open;
+}
+void setIsFileOpen(bool b){
+	file_was_open = b;
+}
 
 
-bool decoderGetFrame(unsigned char *frame_decode,MP3FrameInfo * _frameInfo)
+bool decoderGetFrame(unsigned char *frame_decode, MP3FrameInfo * _frameInfo)
 {
 	uint8_t buffer_info_file[MAX_SIZE_FRAME];
+
+	uint8_t error;
+	bool sync = false;
 	  //ver stereo
 	uint32_t offset;
 	uint32_t bytesLeft = 0;
 	uint32_t bytesRead = 0;
-	//
-	//
-	if (!file_was_open)
-	{
-		fr = f_mount(&FatFs, "", 0);
-		fr = f_open(&FileMP3, "himno1.mp3", FA_READ);	//"Boca_Yo_Te_Amo.mp3""himno1.mp3""El Sensei (64).mp3"
+	if (!file_was_open){
+	//	fr = f_mount(&FatFs, "", 0);
+		fr = f_open(&FileMP3, _path, FA_READ);	//"Boca_Yo_Te_Amo.mp3""himno1.mp3""El Sensei (64).mp3"
 		file_was_open = true;
+		//readID3Tag();
 	}
-	else
-	{
-		while(!f_eof(&FileMP3))
-		{
-			if(f_read(&FileMP3, buffer_info_file + bytesLeft, MAX_SIZE_FRAME -  bytesLeft, &bytesRead  ) == FR_OK)
+	else{
+		while(!f_eof(&FileMP3)){
+
+			if(f_read(&FileMP3, buffer_info_file, MAX_SIZE_FRAME -  bytesLeft, &bytesRead  ) == FR_OK)
 			{
 
 			    offset = MP3FindSyncWord(buffer_info_file, bytesRead);
@@ -65,14 +73,14 @@ bool decoderGetFrame(unsigned char *frame_decode,MP3FrameInfo * _frameInfo)
 			    	 //bytesLeft = bytesRead;
 
 			    }
-			    unsigned char* buffer_info_file_aux  = buffer_info_file + offset;
+			    unsigned char * buffer_info_file_aux = buffer_info_file + offset;
 			    bytesLeft = bytesRead - offset;
 
 			    MP3GetNextFrameInfo(decoder, _frameInfo, buffer_info_file_aux);
 
-			    uint8_t error = MP3Decode(decoder, &buffer_info_file_aux, &bytesLeft,(int16_t*)frame_decode, 0);
+			    error = MP3Decode(decoder, &buffer_info_file_aux, &bytesLeft,(int16_t*)frame_decode, 0);
 
-			    f_lseek(&FileMP3, f_tell(&FileMP3)- bytesLeft);
+			    f_lseek(&FileMP3, f_tell(&FileMP3) - bytesLeft);
 
 			    if (!error)
 			    {
@@ -93,7 +101,21 @@ bool decoderGetFrame(unsigned char *frame_decode,MP3FrameInfo * _frameInfo)
 		}
 		return false;
 	}
-
+	return true;
 
 }
 
+void setPath(char * newPath){
+	_path = newPath;
+}
+
+ID3Tag_t * getID3Tag(void){
+	return &tag;
+}
+
+void readID3Tag(void){
+		f_lseek(&FileMP3, f_size(&FileMP3) - 128);
+		uint8_t bytes;
+		fr = f_read(&FileMP3, (char *)&tag, 128, &bytes);
+		f_lseek(&FileMP3, 0);
+}

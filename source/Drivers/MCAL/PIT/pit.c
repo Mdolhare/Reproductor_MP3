@@ -33,7 +33,7 @@ void pitInit(void) {
     //PIT->CHANNEL[0].TCTRL |= PIT_TCTRL_TIE_MASK;
     //PIT->CHANNEL[0].TCTRL |= PIT_TCTRL_TEN_MASK;
 
-    //NVIC_SetPriority(PIT0_IRQn, 0);
+    NVIC_SetPriority(PIT0_IRQn, 0);
     //NVIC_SetPriority(PIT1_IRQn, 1);
 
 
@@ -66,6 +66,7 @@ static void pitIRQHandler(uint32_t pit) {
 	pitIQRs[pit]();
 }
 
+//#define LED_G PORTNUM2PIN(PE,26)
 
 
 __ISR__ PIT0_IRQHandler(void) {
@@ -86,8 +87,12 @@ __ISR__ PIT2_IRQHandler(void) {
 }
 
 __ISR__ PIT3_IRQHandler(void) {
+//	gpioWrite(LED_G, LOW);
+
 	pitIRQHandler(PIT_3);
 	PIT->CHANNEL[3].TFLG = 1;
+	//	gpioWrite(LED_G, HIGH);
+
 }
 
 

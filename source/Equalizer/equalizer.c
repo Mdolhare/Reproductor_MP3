@@ -64,7 +64,7 @@ static arm_biquad_casd_df1_inst_q31 S4;
 static arm_biquad_casd_df1_inst_q31 S5;
 
 
-static uint8_t gain[5] = 0;
+static uint8_t gain[5] = {0};
 
 /*******************************************************************************
  *******************************************************************************
@@ -93,38 +93,52 @@ void equalizerInit(int8_t* gainDB) {
 
 }
 
-uint8_t* getGain(presets_t preset, uint8_t* gainDB) {
+void setGain(int8_t* gainDB) {
 
-	uint8_t gains[5] = 0;
+	for (int i = 0; i<5; i++)
+		gain[i] = gainDB[i];
+
+	equalizerInit(gain);
+
+	show_equ_gain(gain);
+
+}
+
+int8_t * getGainPreset(presets_t preset, int8_t* gainDB) {
+
+	int8_t gains[5] = {0};
 
 	switch (preset) {
 		case NORMAL: break;
 		case JAZZ:
-			gains[3] = -5;
-			gains[4] = -1;
-			gains[5] = 2;
+			gains[2] = -5;
+			gains[3] = -1;
+			gains[4] = 2;
 		break;
 		case POP:
-			gains[4] = 2;
-			gains[5] = -2;
-		break;
-		case ROCK:
 			gains[3] = 2;
 			gains[4] = -2;
-			gains[5] = 1;
+		break;
+		case ROCK:
+			gains[2] = 2;
+			gains[3] = -2;
+			gains[4] = 1;
 		break;
 		case CLASSIC:
-			gains[4] = -6;
-			gains[5] = 1;
+			gains[3] = -6;
+			gains[4] = 1;
 		break;
 		case CUSTOM:
 			for (int i = 0; i<5; i++)
 				gains[i] = gainDB[i];
 		break;
+		
+		break;
 		default: break;
 
 	}
 
+	//guarda en arreglo global de gain	
 	for (int i = 0; i<5; i++)
 		gain[i] = gains[i];
 
@@ -178,7 +192,6 @@ void equalizerFilter(int16_t* inputBuffer, int16_t* outputBuffer, int32_t len) {
 static void show_equ_gain(int8_t* gainDB) {
 
 	int g = 0;
-
 	for(uint8_t col=0; col<8; col++) {
 
 		if (col < 2)
@@ -188,43 +201,47 @@ static void show_equ_gain(int8_t* gainDB) {
 
 
 		if (gainDB[g] < 0) {
-
-			for (uint8_t i=0; i<ROWS/2; i++) {
-
-				if (i<=(-gainDB[g]/2))
-					if (gainDB[g]%2)
-						updateLED(i*COLUMNS + (ROWS/2)*COLUMNS + col, 0, 0b00110000, 0b00110000);
+			if(-gainDB[g] == 1)
+				updateLED((ROWS/2 - 1)*COLUMNS + col, 0, 0, 0b00110000);
+			else{
+				for (uint8_t i=0; i < ROWS/2; i++) {
+					if (i<(-gainDB[g]/2))
+						if (gainDB[g]%2 == 0)
+							updateLED(i*COLUMNS + (ROWS/2)*COLUMNS + col, 0, 0b00110000, 0b00110000);
+						else
+							updateLED(i*COLUMNS + (ROWS/2)*COLUMNS + col, 0, 0, 0b00110000);
 					else
-						updateLED(i*COLUMNS + (ROWS/2)*COLUMNS + col, 0, 0, 0b00110000);
-				else
-					updateLED(i*COLUMNS + (ROWS/2)*COLUMNS + col, 0b11000000, 0b11000000, 0b11000000);
-			}
-			for (uint8_t i=0; i<ROWS/2; i++) {
-				updateLED((ROWS/2 - 1)*COLUMNS - i*COLUMNS + col, 0b11000000, 0b11000000, 0b11000000);
+						updateLED(i*COLUMNS + (ROWS/2)*COLUMNS + col, 0b00000000, 0b00000000, 0b0000000);
+				}
+				for (uint8_t i=0; i<ROWS/2; i++) {
+					updateLED((ROWS/2 - 1)*COLUMNS - i*COLUMNS + col, 0b00000000, 0b00000000, 0b00000000);
+				}
 			}
 
 		}
 		else if (gainDB[g] > 0) {
-
-			for (uint8_t i=0; i<ROWS/2; i++) {
-
-				if (i<=(gainDB[g]/2))
-					if (gainDB[g]%2)
-						updateLED((ROWS/2 - 1)*COLUMNS - i*COLUMNS + col, 0, 0b00110000, 0b00110000);
+			if(gainDB[g] == 1)
+				updateLED((ROWS/2 - 1)*COLUMNS + col, 0, 0, 0b00110000);
+			else{
+				for (uint8_t i=0; i<ROWS/2; i++) {
+					if (i<(gainDB[g]/2))
+						if (gainDB[g]%2 == 0)
+							updateLED((ROWS/2 - 1)*COLUMNS - i*COLUMNS + col, 0, 0b00110000, 0b00110000);
+						else
+							updateLED((ROWS/2 - 1)*COLUMNS - i*COLUMNS + col, 0, 0, 0b00110000);
 					else
-						updateLED((ROWS/2 - 1)*COLUMNS - i*COLUMNS + col, 0, 0, 0b00110000);
-				else
-					updateLED((ROWS/2 - 1)*COLUMNS - i*COLUMNS + col, 0b11000000, 0b11000000, 0b11000000);
+						updateLED((ROWS/2 - 1)*COLUMNS - i*COLUMNS + col, 0b00000000, 0b00000000, 0b000000000);
+
+				}
+				for (uint8_t i=0; i<ROWS/2; i++) {
+					updateLED(i*COLUMNS + (ROWS/2)*COLUMNS + col, 0b00000000, 0b00000000, 0b00000000);
+				}
 
 			}
-			for (uint8_t i=0; i<ROWS/2; i++) {
-				updateLED(i*COLUMNS + (ROWS/2)*COLUMNS + col, 0b11000000, 0b11000000, 0b11000000);
-			}
-
 		}
 		else {	//0dB
 			for (uint8_t i=0; i<ROWS; i++) {
-				updateLED(i*COLUMNS + col, 0b11000000, 0b11000000, 0b11000000);
+				updateLED(i*COLUMNS + col, 0b00000000, 0b00000000, 0b00000000);
 			}
 		}
 

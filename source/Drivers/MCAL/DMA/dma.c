@@ -150,11 +150,15 @@ void dma_add_irq(dma_channels_t channel, dmaIrqFun_t callback, TCD_t* tcd, bool 
 static void dma_IQR_handler(dma_channels_t channel) {
 	irqs[channel]();
 }
+//#define LED_G PORTNUM2PIN(PE,26)
 
 
 __ISR__ DMA0_IRQHandler(void) {
+//	gpioWrite(LED_G, LOW);
 	DMA0->CINT |= 0;
 	dma_IQR_handler(dmaCHANNEL0);
+	//gpioWrite(LED_G, HIGH);
+
 }
 
 __ISR__ DMA1_IRQHandler(void) {

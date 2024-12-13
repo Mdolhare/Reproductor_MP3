@@ -15,6 +15,8 @@
 #include "../../helix/pub/mp3dec.h"
 #include "../Vumeter/vumeter.h"
 #include "../Equalizer/equalizer.h"
+#include "../EventGenerator/eventGenerator.h"
+#include <string.h>
 
 //debug
 #include "../Drivers/MCAL/Gpio/gpio.h"
@@ -72,6 +74,9 @@ static bool transfer_to_dac_1_prev;
 
 static MP3FrameInfo frameInfo;
 
+static uint8_t volumen = 15;
+static bool vumeter_enable = true;
+
 
 
 /*******************************************************************************
@@ -79,76 +84,64 @@ static MP3FrameInfo frameInfo;
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
-
 void playMusicInit(void) {
-
 	decoderInit();
-
-	//lee para open
-	if(decoderGetFrame(frame_decode_1, &frameInfo)){
-
-	}
-	else {
-		while(1);
-	}
-	//Lee para primer frame, tener datos
-	if(decoderGetFrame(frame_decode_1, &frameInfo)){
-
-	}
-	else{
-		while(1);
-	}
-	uint32_t i = 0;
-	/*
-	for(i = 0; i < 3000; i++){
-		frame_decode_1[i] = frame_decode_1[i]/4;
-	}
-	*/
-
 	transfer_to_dac_1 = true;
 	buffer_complete = true;
 	transfer_to_dac_1_prev = transfer_to_dac_1;
 
-	audio_init(frameInfo.samprate, frame_decode_1, frame_decode_2,
-			frameInfo.outputSamps, &transfer_to_dac_1);
-
-	vumeterInit(4096, frameInfo.samprate, 80, frameInfo.samprate/3);
-
-	int8_t gainDB[5] = {0,0,0,0,0};
-
-	equalizerInit(gainDB);
 }
 
-void playMusic(int volume) {
+void setVolumen(uint8_t _volumen){
+	if(_volumen < 30){
+		volumen = _volumen;
+	}
+}
 
-	int count = 0;
+void vumeterEnable(bool enable){
+	vumeter_enable = enable;
+}
 
+
+void playMusic() {
+	static int count = 0;
 	if(transfer_to_dac_1 && !buffer_complete)
 	{
+
+
 		if(decoderGetFrame(frame_decode_2, &frameInfo)){
+
 			buffer_complete = true;
 
 			for(int i=0;i<ARR_LEN/2 + 1;i++) {
-				frame_decode_2[i] = frame_decode_2[2*i];//*(volume/30);
+				frame_decode_2[i] = ((frame_decode_2[2*i])*volumen)/30;//*(volume/30);
 			}
 
-			//equalizerFilter(frame_decode_2, frame_decode_2, (frameInfo.outputSamps)/2);
+			equalizerFilter(frame_decode_2, frame_decode_2, (frameInfo.outputSamps)/2);
+
+
 
 			for (int i = 0; i < 3000; i++) {
-				//if (count == 10) {
+				if ((count == 5) && (i < 32)) {
 					frame_deepcopy_2[i] = frame_decode_2[i];
-				//}
+				}
+
 				frame_decode_2[i] = (frame_decode_2[i]+32768)>>4;
 			}
-			//if (count == 10) {
-				vumeterTransform(frame_deepcopy_2);
-				count = 0;
-			//}
-			count++;
+			if (count == 5) {
+				if(vumeter_enable){
+					vumeterTransform(frame_deepcopy_2);
+				}
 
+				count = 0;
+			}
+
+			count++;
 		}
 		else{
-			while(1);
+			//ENd song
+			EG_addEvent(FINISH_SONG);
+			//while(1);
 		}
 	}
 
@@ -158,20 +151,22 @@ void playMusic(int volume) {
 			buffer_complete = true;
 
 			for(int i=0;i<ARR_LEN/2 + 1;i++) {
-				frame_decode_1[i] = frame_decode_1[2*i];//*(volume/30);
+				frame_decode_1[i] = ((frame_decode_1[2*i])*volumen)/30;//*(volume/30);
 			}
 
-			//equalizerFilter(frame_decode_1, frame_decode_1, (frameInfo.outputSamps)/2);
+			equalizerFilter(frame_decode_1, frame_decode_1, (frameInfo.outputSamps)/2);
 
 			for (int i = 0; i < 3000; i++) {
 				//frame_deepcopy_1[i] = frame_decode_1[i];
 		 		frame_decode_1[i] = (frame_decode_1[i]+32768)>>4;
 			}
 			//vumeterTransform(frame_deepcopy_1);
-
+			//count++;
 		}
 		else{
-			while(1);
+			EG_addEvent(FINISH_SONG);
+
+//			while(1);
 		}
 	}
 
@@ -181,14 +176,14 @@ void playMusic(int volume) {
 		transfer_to_dac_1_prev = transfer_to_dac_1;
 	}
 
+
 }
 
-void playMusicPause(void){
+void playPauseMusic(void){
 	//debug
-	gpioWrite(LED_R, LOW);
-	gpioWrite(LED_B, LOW);
-	gpioWrite(LED_G, LOW);
-
+	//gpioWrite(LED_R, LOW);
+	//gpioWrite(LED_B, LOW);
+	//gpioWrite(LED_G, LOW);
 	static bool isPlaying = false;
 	if(isPlaying){
 		audio_pause();
@@ -198,6 +193,60 @@ void playMusicPause(void){
 		audio_resume();
 		isPlaying = true;
 	}
+}
+
+void playNewSong(char * song){
+
+
+	setPath(song);
+	setIsFileOpen(false);
+	audio_pause();
+	
+	//lee para open
+	if(decoderGetFrame(frame_decode_1, &frameInfo)){
+
+	}
+	else {
+		//Error
+		while(1);
+	}
+	//readID3Tag();
+
+	//Lee para primer frame, tener datos
+	if(decoderGetFrame(frame_decode_1, &frameInfo)){
+
+	}
+	else{
+		//Error
+		while(1);
+	}
+	static bool init = false;
+	audio_init(frameInfo.samprate, frame_decode_1, frame_decode_2,
+				frameInfo.outputSamps, &transfer_to_dac_1);
+	if (!init)
+	{
+
+		vumeterInit(32, frameInfo.samprate, 80, frameInfo.samprate/3);//frameInfo.samprate/2);
+
+		int8_t gainDB[5] = {0,0,0,0,0};
+
+		equalizerInit(gainDB);
+		init =  true;
+	}
+
+	audio_resume();
+
+}
+
+bool getSongInfo(songInfo_t * song){
+	ID3Tag_t * tag = getID3Tag();
+	if(strcmp(tag->tag,"TAG")==0){
+		strncpy(song->title, tag->title, 30);
+		strncpy(song->artist, tag->artist, 30);
+		strncpy(song->album, tag->album, 30);
+		return true;
+	}
+	return false;
 }
 
 /*******************************************************************************

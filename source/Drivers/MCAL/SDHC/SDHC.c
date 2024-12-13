@@ -21,7 +21,6 @@
 #define DAT3_CD 	(PORTNUM2PIN(PE,4))		//SDHC0_D3
 #define CMD 		(PORTNUM2PIN(PE,3))		//SDHC0_CMD
 #define CLK 		(PORTNUM2PIN(PE,2))		//SDHC0_DCLK
-#define SW_DETECT 	(PORTNUM2PIN(PE,6))		//PTE6
 
 #define SDHC_CMD_ERR 		(SDHC_IRQSTAT_CTOE_MASK | SDHC_IRQSTAT_CCE_MASK)
 #define SDHC_CMD_DAT_ERR	(SDHC_IRQSTAT_DTOE_MASK | SDHC_IRQSTAT_DEBE_MASK | SDHC_IRQSTAT_AC12E_MASK)
@@ -82,9 +81,9 @@ void SDHC_init(){
 	*PCR_ADRESS(DAT3_CD)	= PORT_PCR_MUX(PORT_mAlt4) | PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
 	*PCR_ADRESS(CMD) 		= PORT_PCR_MUX(PORT_mAlt4) | PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
 	*PCR_ADRESS(CLK) 		= PORT_PCR_MUX(PORT_mAlt4);
-	*PCR_ADRESS(SW_DETECT) 	= PORT_PCR_MUX(PORT_mGPIO) | PORT_PCR_PE_MASK;
+	*PCR_ADRESS(SDHC_SW_DETECT) 	= PORT_PCR_MUX(PORT_mGPIO) | PORT_PCR_PE_MASK;
 
-	gpioMode(SW_DETECT, INPUT_PULLDOWN);
+	gpioMode(SDHC_SW_DETECT, INPUT_PULLDOWN);
 
 	SIM->SOPT2 &= ~SIM_SOPT2_SDHCSRC_MASK;
 
@@ -125,7 +124,7 @@ void SDHC_enableCardDedection(){
 }
 
 bool SDHC_isCardDetected(){
-	return gpioRead(SW_DETECT);
+	return gpioRead(SDHC_SW_DETECT);
 }
 
 void SDHC_setClockFrecuency(sdhc_prescaler presc, uint8_t div){
@@ -294,6 +293,7 @@ static bool SDHC_checkErrInCMD(bool useDatLine){
 
 		}
 	}
+	status.err = NO_ERR;
 	return true;
 }
 

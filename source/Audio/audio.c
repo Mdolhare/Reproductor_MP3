@@ -31,6 +31,10 @@ void audio_init(uint32_t _fs, uint16_t* source, uint16_t* source2, uint32_t fram
 
     T = 1000000/_fs;
 
+
+
+
+
     uint8_t* destination = DAC_getPtrToDat();
 
     configs[0].source = (uint32_t)source;

@@ -80,7 +80,7 @@ typedef struct {
     uint32_t RESERVED_3 : 4;
     uint32_t ISF : 1;
     uint32_t RESERVED_4 : 7;
-} PCR_Type;
+}PCR_Type;
 
 
 /*******************************************************************************

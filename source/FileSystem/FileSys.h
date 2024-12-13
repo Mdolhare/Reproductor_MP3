@@ -1,51 +1,60 @@
-/***************************************************************************//**
-  @file     SDHC.h
-  @brief    Driver MCAL para SDHC
-  @author   Grupo 2
- ******************************************************************************/
-#ifndef SD_H_
-#define SD_H_
+/*
+ * FileSys.h
+ *
+ *  Created on: Apr 1, 2024
+ *      Author: Grupo 2
+ */
+
+#ifndef FILESYS_H_
+#define FILESYS_H_
 
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
-#include <stdbool.h>
+
 #include <stdint.h>
+#include <stdbool.h>
+
+#include "FAT/ff.h"
+//#include "node.h"
+#include "../Drivers/HAL/SD/SD.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
+//#define NAMELENGTH 12+1    	//sale de FILINFO
+//#define PATHLENGHT 50		//lo mismo para este
 
+#define CANTSONGS_MAX	50
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
-typedef enum {
-	SD_INIT = 0,
-	SD_NOTINIT,
-	SD_OK,
-	SD_ERROR,
-	SD_ERROR_TI,
-	SD_ERROR_OP,
-	SD_RDY,
-	SD_NOTRDY,
-} SD_cardStatus;
+
+/*******************************************************************************
+ * VARIABLE PROTOTYPES WITH GLOBAL SCOPE
+ ******************************************************************************/
 
 
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
-void SD_init();
+void InitFileSys(void);
 
-void SD_reset();
+bool mountSD(void);
 
-bool SD_initializationProcess();
+void readSD(void);
 
-SD_cardStatus SD_getStatus();
+char * getPath(int _i);
 
-bool SD_isSDcard();
+int getCantSongs(void);
 
-bool SD_readSectors(uint32_t address, uint32_t numSector, uint32_t * data);
 
-#endif /* SD_H_ */
+/*******************************************************************************
+ ******************************************************************************/
+
+
+
+
+#endif /* FILESYS_H_ */

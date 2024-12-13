@@ -171,7 +171,6 @@ static bool SD_operationConditionValidation();
 static bool SD_configDataTransferMode();
 static sd_stateR1 SD_getCurrentState();
 static bool SD_sendAplicationCMD(uint32_t rca, SDHC_cmd_t * cmdSend);
-static void SD_timerPIT(void);
 
 
 
@@ -197,10 +196,20 @@ static bool isTimePassed;
 void SD_init(){
 	SDHC_init();
 	//SDHC_enableCardDedection();
-	pitInit();
+	//pitInit();
 
 	cardInfo.cardStatus = SD_NOTINIT;
 }
+
+void SD_reset(){
+	cardInfo.cardStatus = SD_NOTINIT;
+	cardInfo.isSDHC = 0;
+	cardInfo.isUHS2 = 0;
+	cardInfo.rca = 0;
+	cardInfo.busWidth = 0;
+	cardInfo.blockSize = 0;
+}
+
 bool SD_isSDcard(){
 	return SDHC_isCardDetected();
 }
@@ -212,31 +221,38 @@ SD_cardStatus SD_getStatus(){
 bool SD_initializationProcess(){
 	bool success = false;
 	cardInfo.cardStatus = SD_INIT;
+
 	//inicializacion de SDHC
+
 	SDHC_boot(LITTLE_E);
 	while(SDHC_getCMDstatus());
+
+	SDHC_setBlockSize(512);
 
 	//freq menor a 400KHz
 	SDHC_setClockFrecuency(PRESCALEx16,15);
 
+
 	//resetear para iniciar proceso desde IDLE
 	bool no_err = SD_resetToIDLE();
+	SDHC_errType SDHC_state = SDHC_getErrStatus();
 
+	sd_stateR1 state = SD_getCurrentState();
 	if(no_err){
 		//configuracion de sd
 		no_err = SD_operationConditionValidation();
-
+		SDHC_state = SDHC_getErrStatus();
 		if(no_err){
 			//sd en modo transfer data
 			success = SD_configDataTransferMode();
 			cardInfo.cardStatus = success ? SD_RDY : SD_NOTRDY;
 		}
 		else{
-			cardInfo.cardStatus = SD_ERROR;
+			cardInfo.cardStatus = SD_ERROR_OP;
 		}
 	}
 	else{
-		cardInfo.cardStatus = SD_ERROR;
+		cardInfo.cardStatus = SD_ERROR_TI;
 	}
 
 	return success;
@@ -338,6 +354,7 @@ static bool SD_operationConditionValidation(){
 	bool validation = false;
 	bool cmd8Response = false;
 	SDHC_cmd_t cmd;
+	sd_stateR1 state;
 
 	bool pattern_ok;
 	bool vAccepted;
@@ -359,11 +376,11 @@ static bool SD_operationConditionValidation(){
 			cmd8Response = false;
 		}
 	}
-
+	state = SD_getCurrentState();
 	//CMD55 (APP_CMD) y despues ACMD41 (SD_SEND_OP_COND)
 	if(cmd8Response){
 		bool initializationComplete = false;
-		uint8_t tries = 10;
+		uint8_t tries = 1000;
 		isTimePassed = false;
 	//	pitSetIRQFunc(PIT_3, SD_timerPIT);
 
@@ -392,7 +409,7 @@ static bool SD_operationConditionValidation(){
 					while((count--));
 				//	isTimePassed = false;
 					//reenvio de ACMD41 con argunento 0
-					cmd.cmd_arg = 0;
+					//cmd.cmd_arg = SD_ARG_ACMD41_HCS_MASK;
 				}
 			}
 			else{
@@ -591,6 +608,3 @@ static bool SD_sendAplicationCMD(uint32_t rca, SDHC_cmd_t * cmdSend){
 	return no_err;
 }
 
-static void SD_timerPIT(void){
-	isTimePassed = true;
-}

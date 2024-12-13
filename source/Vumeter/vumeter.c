@@ -94,7 +94,7 @@ static uint16_t sampleSize;
 
 void vumeterInit(uint16_t _sampleSize, uint32_t fs, float32_t lowBand, float32_t highBand) {
 
-	arm_rfft_init_q15(&fftInstance, MAX_SAMPLE_SIZE, 0, 1);
+	arm_rfft_init_q15(&fftInstance, _sampleSize, 0, 1);
 
 	sampleSize = _sampleSize;
 
@@ -116,11 +116,11 @@ void vumeterInit(uint16_t _sampleSize, uint32_t fs, float32_t lowBand, float32_t
 
 	for (int8_t bin=0; bin<VUMETER_BIN_AMOUNT; bin++) {
 
-		limits[bin] = ((uint64_t)limits[bin]*4096)/limits[7];
+		limits[bin] = ((uint64_t)limits[bin]*sampleSize)/limits[7]; // sampleSize era 4096
 
 	}
 
-	matrixInit();
+	//matrixInit();
 }
 
 void vumeterTransform(int16_t* data) {

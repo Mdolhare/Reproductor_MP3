@@ -17,6 +17,7 @@
 #include "../Board/board.h"
 
 
+#define LED_G PORTNUM2PIN(PE,26)
 
 
 /*******************************************************************************
@@ -309,7 +310,9 @@ static void slaveIRQ(uint32_t i2c) {
 
 
 __ISR__ I2C0_IRQHandler(void) {
+	//gpioWrite(LED_G, LOW);
 	I2C_IQR_handler(I2C_0);
+//	gpioWrite(LED_G, HIGH);
 }
 
 __ISR__ I2C1_IRQHandler(void) {

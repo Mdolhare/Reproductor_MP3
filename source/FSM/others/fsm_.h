@@ -1,16 +1,12 @@
-/***************************************************************************//**
-  @file     SDHC.h
-  @brief    Driver MCAL para SDHC
-  @author   Grupo 2
- ******************************************************************************/
-#ifndef SD_H_
-#define SD_H_
+#ifndef FSM_H_
+#define FSM_H_
+
 
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
-#include <stdbool.h>
-#include <stdint.h>
+
+#include "fsmTable.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -20,32 +16,21 @@
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
-typedef enum {
-	SD_INIT = 0,
-	SD_NOTINIT,
-	SD_OK,
-	SD_ERROR,
-	SD_ERROR_TI,
-	SD_ERROR_OP,
-	SD_RDY,
-	SD_NOTRDY,
-} SD_cardStatus;
 
+
+/*******************************************************************************
+ * VARIABLE PROTOTYPES WITH GLOBAL SCOPE
+ ******************************************************************************/
 
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
-void SD_init();
 
-void SD_reset();
+state_t fsm(state_t state, byte_t event);
 
-bool SD_initializationProcess();
+/*******************************************************************************
+ ******************************************************************************/
 
-SD_cardStatus SD_getStatus();
 
-bool SD_isSDcard();
-
-bool SD_readSectors(uint32_t address, uint32_t numSector, uint32_t * data);
-
-#endif /* SD_H_ */
+#endif /* FSM_H_ */
